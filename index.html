@@ -1,215 +1,536 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="ar" dir="rtl">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Quran Cross-Reference Reader</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>The Quran Reader Pro</title>
+    
+    <link href="https://fonts.googleapis.com/css2?family=Amiri:wght@400;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Lateef&display=swap" rel="stylesheet">
+
     <style>
+        /* === THEMES & VARIABLES === */
         :root {
-            --primary: #1a5f48;
-            --bg-left: #fdfdfd;
-            --bg-right: #f4f6f5;
-            --highlight: #e8f5e9;
-            --border: #ddd;
+            /* Default Light Theme */
+            --primary: #104F3F;
+            --accent: #D4AF37;
+            --bg-main: #fcfcfc;
+            --bg-panel: #f8f9fa;
+            --text-main: #222;
+            --text-muted: #666;
+            --border: #e0e0e0;
+            --highlight: rgba(212, 175, 55, 0.15);
+            --font-ui: 'Amiri', serif;
+            --font-quran: 'Lateef', serif; 
+            --quran-size: 28px; /* Dynamic Font Size */
         }
-        body { margin: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; display: flex; height: 100vh; overflow: hidden; }
-        
-        /* LAYOUT */
-        #reader-panel { width: 50%; overflow-y: auto; padding: 20px; border-right: 1px solid var(--border); background: var(--bg-left); }
-        #context-panel { width: 50%; overflow-y: auto; padding: 20px; background: var(--bg-right); }
 
-        /* TYPOGRAPHY */
-        .verse-container { padding: 15px; border-bottom: 1px solid #eee; transition: background 0.3s; cursor: pointer; }
-        .verse-container.active { background-color: var(--highlight); border-left: 5px solid var(--primary); }
-        
-        .arabic { font-family: 'Amiri', serif; font-size: 26px; direction: rtl; line-height: 1.8; margin-bottom: 10px; color: #333; }
-        .english { font-size: 16px; color: #555; line-height: 1.5; }
-        .verse-num { font-size: 12px; color: #999; margin-bottom: 5px; font-weight: bold; text-transform: uppercase; }
+        [data-theme="dark"] {
+            --primary: #4DB6AC;
+            --accent: #FFD54F;
+            --bg-main: #121212;
+            --bg-panel: #1e1e1e;
+            --text-main: #e0e0e0;
+            --text-muted: #aaa;
+            --border: #333;
+            --highlight: rgba(255, 213, 79, 0.15);
+        }
 
-        /* BADGES */
-        .badge { display: inline-block; padding: 2px 8px; border-radius: 4px; font-size: 11px; font-weight: bold; margin-bottom: 5px; }
-        .badge-parallel { background: #fff3cd; color: #856404; border: 1px solid #ffeeba; }
-        .badge-direct { background: #d4edda; color: #155724; border: 1px solid #c3e6cb; }
+        body { 
+            margin: 0; 
+            font-family: var(--font-ui); 
+            display: flex; 
+            flex-direction: column; 
+            height: 100vh; 
+            overflow: hidden; 
+            background: var(--bg-main);
+            color: var(--text-main);
+            transition: background 0.3s, color 0.3s;
+        }
 
-        /* LOADING & HEADERS */
-        h2 { margin-top: 0; color: var(--primary); border-bottom: 2px solid var(--border); padding-bottom: 10px; }
-        .loading { color: #888; font-style: italic; padding: 20px; text-align: center; }
+        /* === HEADER === */
+        header {
+            background: var(--bg-panel);
+            border-bottom: 1px solid var(--border);
+            padding: 10px 15px;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            justify-content: space-between;
+            align-items: center;
+            z-index: 100;
+        }
         
-        /* CARD IN RIGHT PANEL */
-        .link-card { background: white; border: 1px solid var(--border); border-radius: 8px; padding: 15px; margin-bottom: 15px; box-shadow: 0 2px 5px rgba(0,0,0,0.05); }
-        .link-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; border-bottom: 1px solid #eee; padding-bottom: 5px; }
-        .link-ref { font-weight: bold; color: var(--primary); }
+        .logo { font-size: 20px; font-weight: bold; color: var(--primary); display: flex; align-items: center; gap: 10px; }
+        
+        .controls { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
+        
+        button, select, input {
+            padding: 6px 12px;
+            border-radius: 6px;
+            border: 1px solid var(--border);
+            background: var(--bg-main);
+            color: var(--text-main);
+            font-family: var(--font-ui);
+            font-size: 14px;
+            cursor: pointer;
+        }
+        
+        /* Font Size Slider */
+        .font-control { display: flex; align-items: center; gap: 5px; font-size: 12px; }
+        input[type=range] { width: 60px; padding: 0; }
+
+        .search-bar { width: 150px; }
+
+        /* === MAIN LAYOUT === */
+        main { display: flex; flex: 1; overflow: hidden; position: relative; }
+        
+        /* READER PANEL */
+        #reader-panel { 
+            flex: 1; 
+            overflow-y: auto; 
+            padding: 0; 
+            scroll-behavior: smooth;
+        }
+
+        /* SIDE PANEL (Context) */
+        #side-panel { 
+            width: 35%; 
+            max-width: 400px;
+            min-width: 300px;
+            border-inline-start: 1px solid var(--border); 
+            background: var(--bg-panel);
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* === MOBILE LAYOUT (TABS) === */
+        .mobile-tabs { display: none; }
+
+        @media (max-width: 768px) {
+            header { padding: 10px; }
+            .search-bar { width: 100px; }
+            .logo span { display: none; } /* Hide text logo on small screens */
+
+            /* Stack panels absolute to toggle visibility */
+            #reader-panel, #side-panel {
+                width: 100%;
+                border: none;
+                position: absolute;
+                top: 0; bottom: 50px; /* Leave space for tabs */
+                left: 0; right: 0;
+            }
+            
+            #side-panel { display: none; } /* Hidden by default */
+            #side-panel.active { display: flex; z-index: 20; }
+            
+            /* Bottom Tab Bar */
+            .mobile-tabs {
+                display: flex;
+                height: 50px;
+                background: var(--bg-panel);
+                border-top: 1px solid var(--border);
+                justify-content: space-around;
+                align-items: center;
+                z-index: 50;
+            }
+            .tab-btn {
+                flex: 1;
+                text-align: center;
+                padding: 10px;
+                font-weight: bold;
+                color: var(--text-muted);
+                border: none; background: none;
+            }
+            .tab-btn.active { color: var(--primary); border-top: 3px solid var(--accent); }
+        }
+
+        /* === VERSE STYLING === */
+        .verse-row {
+            padding: 30px 20px;
+            border-bottom: 1px solid var(--border);
+            position: relative;
+        }
+        .verse-row.active { background-color: var(--highlight); border-inline-start: 4px solid var(--accent); }
+        
+        .quran-text {
+            font-family: var(--font-quran);
+            font-size: var(--quran-size);
+            line-height: 1.8;
+            color: var(--text-main);
+            margin-bottom: 15px;
+            direction: rtl;
+            text-align: right;
+        }
+        
+        .trans-text {
+            font-size: calc(var(--quran-size) * 0.6);
+            color: var(--text-muted);
+            line-height: 1.5;
+        }
+
+        .verse-num-badge {
+            background: var(--border);
+            color: var(--text-muted);
+            font-size: 12px;
+            padding: 2px 8px;
+            border-radius: 12px;
+            margin-bottom: 10px;
+            display: inline-block;
+        }
+
+        /* === CARDS (Context) === */
+        .card {
+            background: var(--bg-main);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 15px;
+            margin-bottom: 10px;
+            cursor: pointer;
+        }
+        .card:hover { border-color: var(--accent); }
+        
+        .badge { font-size: 10px; padding: 2px 6px; border-radius: 4px; font-weight: bold; }
+        .badge-direct { background: #e8f5e9; color: #2e7d32; }
+        .badge-parallel { background: #fff3e0; color: #ef6c00; }
+        [data-theme="dark"] .badge-direct { background: #1b5e20; color: #a5d6a7; }
+        [data-theme="dark"] .badge-parallel { background: #e65100; color: #ffcc80; }
+
+        .hidden { display: none !important; }
+        .loading { text-align: center; padding: 20px; color: var(--text-muted); font-style: italic; }
 
     </style>
-    <link href="https://fonts.googleapis.com/css2?family=Amiri&display=swap" rel="stylesheet">
-    <script src="quran_links.js"></script>
 </head>
 <body>
 
-    <div id="reader-panel">
-        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
-            <h2>Sūrah Al-Fātiḥah (1)</h2>
-            <select id="surah-selector" onchange="loadSurah(this.value)">
-                </select>
+<header>
+    <div class="logo">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2L2 7l10 5 10-5-10-5zm0 9l2.5-1.25L12 8.5l-2.5 1.25L12 11zm0 2.5l-5-2.5-5 2.5L12 22l10-8.5-5-2.5-5 2.5z"/></svg>
+        <span>QuranViz</span>
+    </div>
+    
+    <div class="controls">
+        <input type="text" id="search-input" class="search-bar" placeholder="Search..." onkeyup="handleSearch(event)">
+        
+        <select id="surah-select" onchange="changeSurah(this.value)"></select>
+        
+        <div class="font-control">
+            <span>A</span>
+            <input type="range" min="18" max="48" value="28" oninput="changeFontSize(this.value)">
+            <span style="font-size:16px; font-weight:bold">A</span>
         </div>
-        <div id="quran-text">
-            <div class="loading">Loading Surah...</div>
+
+        <button onclick="toggleTheme()" id="theme-btn">🌙</button>
+        
+        <button onclick="toggleLang()" id="lang-btn">EN</button>
+    </div>
+</header>
+
+<main>
+    <div id="reader-panel">
+        <div id="quran-container">
+            <div class="loading">Loading...</div>
         </div>
     </div>
 
-    <div id="context-panel">
-        <h2>Cross-References</h2>
-        <div id="connections-list">
-            <div style="padding: 20px; color: #666;">
-                Scroll through the verses on the left to see connected passages here.
+    <aside id="side-panel">
+        <div style="padding: 15px; border-bottom: 1px solid var(--border); font-weight:bold; color:var(--primary)" id="panel-title">
+            Cross-References
+        </div>
+        <div id="panel-content" style="flex:1; overflow-y:auto; padding:15px;">
+            <div style="text-align: center; color: var(--text-muted); margin-top: 50px;">
+                Start reading to see connections.
             </div>
         </div>
-    </div>
+    </aside>
+</main>
+
+<div class="mobile-tabs">
+    <button class="tab-btn active" onclick="switchTab('reader')" id="tab-reader">📖 Reader</button>
+    <button class="tab-btn" onclick="switchTab('context')" id="tab-context">🔗 Links</button>
+</div>
 
 <script>
-    // === CONFIGURATION ===
-    let currentSurah = 1;
-    // We use AlQuran Cloud API (Uthmani for Arabic, Asad for English)
-    const API_BASE = "https://api.alquran.cloud/v1";
+    // ==========================================
+    // 1. PASTE YOUR QURAN_LINKS.JS DATA HERE
+    // ==========================================
+    // Replace this dummy data with your FULL dataset
+    const QURAN_LINKS = {
+        "1:2": [{surah: 26, verse: 23, type: "Direct"}, {surah: 26, verse: 24, type: "Direct"}],
+        "1:4": [{surah: 82, verse: 19, type: "Direct"}],
+        "1:6": [{surah: 2, verse: 142, type: "Parallel"}]
+    };
+    // ==========================================
 
-    // === INITIALIZATION ===
+    const STATE = {
+        lang: 'ar',
+        currentSurah: 1,
+        activeVerseKey: null,
+        theme: 'light'
+    };
+
+    const UI = {
+        ar: { title: "القرآن المترابط", search: "بحث...", refs: "الروابط", lang: "EN", loading: "جار التحميل...", tabRead: "القارئ", tabLink: "الروابط", noLinks: "لا توجد روابط" },
+        en: { title: "QuranViz", search: "Search...", refs: "Connections", lang: "عربي", loading: "Loading...", tabRead: "Reader", tabLink: "Links", noLinks: "No links found" }
+    };
+
+    // INIT
     document.addEventListener('DOMContentLoaded', () => {
-        populateSurahList();
+        populateSurahSelect();
+        // Check system theme preference
+        if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
+            toggleTheme();
+        }
         loadSurah(1);
+        updateUIText();
     });
 
-    // === FUNCTION 1: LOAD MAIN SURAH ===
-    async function loadSurah(surahNum) {
-        currentSurah = surahNum;
-        const container = document.getElementById('quran-text');
-        container.innerHTML = '<div class="loading">Fetching Surah text...</div>';
-        document.getElementById('connections-list').innerHTML = '<div style="padding:20px; color:#666;">Connections will appear here...</div>';
+    // --- UI FUNCTIONS ---
+    function toggleTheme() {
+        STATE.theme = STATE.theme === 'light' ? 'dark' : 'light';
+        document.documentElement.setAttribute('data-theme', STATE.theme);
+        document.getElementById('theme-btn').innerText = STATE.theme === 'light' ? '🌙' : '☀️';
+    }
+
+    function changeFontSize(val) {
+        document.documentElement.style.setProperty('--quran-size', val + 'px');
+    }
+
+    function toggleLang() {
+        STATE.lang = STATE.lang === 'ar' ? 'en' : 'ar';
+        const isAr = STATE.lang === 'ar';
+        document.documentElement.dir = isAr ? 'rtl' : 'ltr';
+        loadSurah(STATE.currentSurah); // Reload to fetch correct translation
+        updateUIText();
+    }
+
+    function updateUIText() {
+        const txt = UI[STATE.lang];
+        document.querySelector('.logo span').innerText = txt.title;
+        document.getElementById('search-input').placeholder = txt.search;
+        document.getElementById('panel-title').innerText = txt.refs;
+        document.getElementById('lang-btn').innerText = txt.lang;
+        document.getElementById('tab-reader').innerText = txt.tabRead;
+        document.getElementById('tab-context').innerText = txt.tabLink;
+    }
+
+    function switchTab(tab) {
+        // Mobile only
+        const reader = document.getElementById('reader-panel');
+        const side = document.getElementById('side-panel');
+        const tabR = document.getElementById('tab-reader');
+        const tabC = document.getElementById('tab-context');
+
+        if (tab === 'reader') {
+            reader.style.display = 'block';
+            side.classList.remove('active');
+            tabR.classList.add('active');
+            tabC.classList.remove('active');
+        } else {
+            // reader.style.display = 'none'; // Optional: keep reader in background
+            side.classList.add('active');
+            tabR.classList.remove('active');
+            tabC.classList.add('active');
+        }
+    }
+
+    // --- CORE LOGIC ---
+    async function loadSurah(surahId, scrollToVerse = null) {
+        STATE.currentSurah = parseInt(surahId);
+        const container = document.getElementById('quran-container');
+        container.innerHTML = `<div class="loading">${UI[STATE.lang].loading}</div>`;
+        document.getElementById('surah-select').value = surahId;
 
         try {
-            // Fetch Arabic and English editions
-            const response = await fetch(`${API_BASE}/surah/${surahNum}/editions/quran-uthmani,en.asad`);
-            const data = await response.json();
+            // API LOGIC:
+            // AR Mode: Get 'quran-uthmani' only. (No Translation)
+            // EN Mode: Get 'quran-uthmani' + 'en.sahih'
             
-            const arabicData = data.data[0].ayahs;
-            const englishData = data.data[1].ayahs;
+            let editions = 'quran-uthmani'; 
+            if (STATE.lang === 'en') editions += ',en.sahih';
 
-            container.innerHTML = ''; // Clear loading
+            const res = await fetch(`https://api.alquran.cloud/v1/surah/${surahId}/editions/${editions}`);
+            const data = await res.json();
+            
+            const ayahs = data.data[0].ayahs;
+            const trans = data.data.length > 1 ? data.data[1].ayahs : null;
 
-            arabicData.forEach((ayah, index) => {
-                const engAyah = englishData[index];
-                const verseNum = ayah.numberInSurah;
-                const verseKey = `${surahNum}:${verseNum}`;
+            container.innerHTML = '';
 
-                // Create Verse Element
+            ayahs.forEach((ayah, idx) => {
+                const verseKey = `${surahId}:${ayah.numberInSurah}`;
                 const div = document.createElement('div');
-                div.className = 'verse-container';
+                div.className = 'verse-row';
                 div.id = `verse-${verseKey}`;
                 div.dataset.key = verseKey;
                 
-                // Content
-                div.innerHTML = `
-                    <div class="verse-num">Verse ${verseNum}</div>
-                    <div class="arabic">${ayah.text}</div>
-                    <div class="english">${engAyah.text}</div>
-                `;
+                let html = `<span class="verse-num-badge">${ayah.numberInSurah}</span>`;
+                html += `<div class="quran-text">${ayah.text}</div>`;
+                if (trans) html += `<div class="trans-text">${trans[idx].text}</div>`;
 
-                // Add Click Event (Manual Select)
-                div.onclick = () => highlightVerse(verseKey);
-
-                // Add Intersection Observer (Auto Select on Scroll)
+                div.innerHTML = html;
+                div.onclick = () => activateVerse(verseKey);
                 observer.observe(div);
-                
                 container.appendChild(div);
             });
 
-        } catch (err) {
-            container.innerHTML = `<div class="loading" style="color:red">Error loading text: ${err.message}</div>`;
+            if (scrollToVerse) {
+                setTimeout(() => {
+                    const el = document.getElementById(`verse-${surahId}:${scrollToVerse}`);
+                    if(el) {
+                        el.scrollIntoView({behavior: "smooth", block: "center"});
+                        activateVerse(`${surahId}:${scrollToVerse}`);
+                    }
+                }, 500);
+            }
+        } catch (e) {
+            container.innerHTML = `<div class="loading" style="color:red">Error loading surah</div>`;
         }
     }
 
-    // === FUNCTION 2: SCROLL DETECTION ===
-    // This watches which verse is visible on screen
+    // --- OBSERVER ---
     const observer = new IntersectionObserver((entries) => {
         entries.forEach(entry => {
-            if (entry.isIntersecting) {
-                // Determine which element is most central
-                highlightVerse(entry.target.dataset.key);
+            if(entry.isIntersecting && entry.intersectionRatio > 0.6) {
+                activateVerse(entry.target.dataset.key);
             }
         });
-    }, { root: document.getElementById('reader-panel'), threshold: 0.6 }); // Trigger when 60% visible
+    }, { root: document.getElementById('reader-panel'), threshold: 0.6 });
 
-    // === FUNCTION 3: SHOW CONNECTIONS ===
-    function highlightVerse(key) {
-        // 1. Highlight Left Side
-        document.querySelectorAll('.verse-container').forEach(el => el.classList.remove('active'));
-        const activeEl = document.getElementById(`verse-${key}`);
-        if(activeEl) activeEl.classList.add('active');
+    function activateVerse(key) {
+        if (STATE.activeVerseKey === key) return;
+        STATE.activeVerseKey = key;
 
-        // 2. Load Right Side Data
-        loadConnections(key);
+        document.querySelectorAll('.verse-row').forEach(d => d.classList.remove('active'));
+        const el = document.getElementById(`verse-${key}`);
+        if(el) el.classList.add('active');
+
+        loadContext(key);
     }
 
-    async function loadConnections(key) {
-        const container = document.getElementById('connections-list');
-        const links = QURAN_LINKS[key]; // From our generated JS file
+    // --- LOAD CONNECTIONS ---
+    async function loadContext(key) {
+        document.getElementById('panel-title').innerText = `${UI[STATE.lang].refs} (${key})`;
+        const container = document.getElementById('panel-content');
+        
+        const links = QURAN_LINKS[key];
 
         if (!links || links.length === 0) {
-            container.innerHTML = `<div style="padding:20px; color:#999; text-align:center;">No cross-references found for Verse ${key.split(':')[1]}.</div>`;
+            container.innerHTML = `<div style="padding:20px; text-align:center; color:var(--text-muted)">${UI[STATE.lang].noLinks}</div>`;
             return;
         }
 
-        container.innerHTML = '<div class="loading">Loading connected verses...</div>';
+        container.innerHTML = `<div class="loading">${UI[STATE.lang].loading}</div>`;
         
+        // Decide which edition to fetch for references
+        // If App is in Arabic, fetch Arabic text. If English, fetch English translation.
+        const refEdition = STATE.lang === 'ar' ? 'quran-uthmani' : 'en.sahih';
+
         let html = '';
-        
-        // Group links to minimize API calls (optional optimization, here we just fetch)
-        // Note: For production, we would batch these requests. For MVP, we fetch individually.
-        
         for (const link of links) {
-            const typeBadge = link.type === 'Parallel' 
-                ? `<span class="badge badge-parallel">Parallel (pp)</span>` 
-                : `<span class="badge badge-direct">Direct Link</span>`;
-
             try {
-                // Fetch the specific connected verse text
-                // Check local cache or fetch
-                const res = await fetch(`${API_BASE}/ayah/${link.surah}:${link.verse}/editions/quran-uthmani,en.asad`);
-                const apiData = await res.json();
+                // Fetch each link
+                const res = await fetch(`https://api.alquran.cloud/v1/ayah/${link.surah}:${link.verse}/${refEdition}`);
+                const d = await res.json();
                 
-                if(apiData.data) {
-                    const arb = apiData.data[0].text;
-                    const eng = apiData.data[1].text;
-                    const meta = apiData.data[0].surah; // To get Surah Name
+                const text = d.data.text;
+                const meta = d.data.surah;
+                const surahName = STATE.lang === 'ar' ? meta.name : meta.englishName;
+                
+                const badge = link.type === 'Parallel' ? 'badge-parallel' : 'badge-direct';
+                const badgeTxt = link.type === 'Parallel' ? 'Parallel' : 'Direct';
 
-                    html += `
-                        <div class="link-card">
-                            <div class="link-header">
-                                <span class="link-ref">Q ${link.surah}:${link.verse} (${meta.englishName})</span>
-                                ${typeBadge}
-                            </div>
-                            <div class="arabic" style="font-size: 20px;">${arb}</div>
-                            <div class="english" style="font-size: 14px;">${eng}</div>
-                        </div>
-                    `;
-                }
-            } catch (e) {
-                console.error("Failed to load link", e);
-            }
+                // Styling text based on language
+                const textStyle = STATE.lang === 'ar' 
+                    ? 'font-family:var(--font-quran); font-size:22px; direction:rtl;' 
+                    : 'font-size:14px; direction:ltr;';
+
+                html += `
+                <div class="card" onclick="jumpToVerse(${link.surah}, ${link.verse})">
+                    <div style="display:flex; justify-content:space-between; margin-bottom:5px;">
+                        <span style="font-weight:bold; color:var(--primary)">${surahName} ${link.surah}:${link.verse}</span>
+                        <span class="badge ${badge}">${badgeTxt}</span>
+                    </div>
+                    <div style="${textStyle}">${text}</div>
+                </div>`;
+            } catch(e) {}
         }
-
         container.innerHTML = html;
     }
 
-    // Helper: Populate Dropdown (Simple version)
-    function populateSurahList() {
-        const select = document.getElementById('surah-selector');
+    // --- SEARCH ---
+    async function handleSearch(e) {
+        if (e.key === 'Enter') {
+            const query = e.target.value;
+            if(!query) return;
+
+            const panel = document.getElementById('panel-content');
+            document.getElementById('panel-title').innerText = "Results / نتائج";
+            panel.innerHTML = `<div class="loading">${UI[STATE.lang].loading}</div>`;
+            
+            // Switch to Links Tab on mobile automatically
+            if(window.innerWidth < 768) switchTab('context');
+
+            try {
+                // CRITICAL FIX: Restrict search to specific editions to avoid Tafsir junk
+                const edition = STATE.lang === 'ar' ? 'quran-uthmani' : 'en.sahih';
+                
+                const res = await fetch(`https://api.alquran.cloud/v1/search/${query}/all/${edition}`);
+                const data = await res.json();
+                
+                if(!data.data || data.data.matches.length === 0) {
+                    panel.innerHTML = `<div style="padding:20px;">No results.</div>`;
+                    return;
+                }
+
+                let html = '';
+                data.data.matches.forEach(m => {
+                    const surahName = STATE.lang === 'ar' ? m.surah.name : m.surah.englishName;
+                    const textStyle = STATE.lang === 'ar' ? 'font-family:var(--font-quran); font-size:20px;' : 'font-size:14px;';
+
+                    html += `
+                    <div class="card" onclick="jumpToVerse(${m.surah.number}, ${m.numberInSurah})">
+                        <div style="font-weight:bold; color:var(--primary)">${surahName} (${m.numberInSurah})</div>
+                        <div style="${textStyle}">${m.text}</div>
+                    </div>`;
+                });
+                panel.innerHTML = html;
+
+            } catch (e) {
+                panel.innerHTML = "Error searching / خطأ في البحث";
+            }
+        }
+    }
+
+    function jumpToVerse(surah, verse) {
+        if(window.innerWidth < 768) switchTab('reader'); // Switch back to reader on mobile
+        
+        if (STATE.currentSurah === surah) {
+            const el = document.getElementById(`verse-${surah}:${verse}`);
+            if (el) {
+                el.scrollIntoView({behavior: "smooth", block: "center"});
+                activateVerse(`${surah}:${verse}`);
+            }
+        } else {
+            document.getElementById('surah-select').value = surah;
+            loadSurah(surah, verse);
+        }
+    }
+    
+    function changeSurah(val) {
+        loadSurah(val);
+    }
+
+    function populateSurahSelect() {
+        const sel = document.getElementById('surah-select');
         for(let i=1; i<=114; i++) {
             const opt = document.createElement('option');
             opt.value = i;
-            opt.innerText = `Surah ${i}`;
-            select.appendChild(opt);
+            opt.innerText = STATE.lang === 'ar' ? i : `Surah ${i}`;
+            sel.appendChild(opt);
         }
     }
+
 </script>
 </body>
 </html>
