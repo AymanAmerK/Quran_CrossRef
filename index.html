@@ -3,285 +3,677 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>The Quran Reader Pro</title>
+    <title>QuranViz - Interactive Reader</title>
     
     <link href="https://fonts.googleapis.com/css2?family=Amiri:wght@400;700&display=swap" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Lateef&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Kufi+Arabic:wght@400;600&display=swap" rel="stylesheet">
 
     <style>
-        /* === THEMES & VARIABLES === */
+        /* === MODERN THEME SYSTEM === */
         :root {
-            /* Default Light Theme */
-            --primary: #104F3F;
-            --accent: #D4AF37;
-            --bg-main: #fcfcfc;
-            --bg-panel: #f8f9fa;
-            --text-main: #222;
-            --text-muted: #666;
-            --border: #e0e0e0;
-            --highlight: rgba(212, 175, 55, 0.15);
-            --font-ui: 'Amiri', serif;
-            --font-quran: 'Lateef', serif; 
-            --quran-size: 28px; /* Dynamic Font Size */
+            --primary: #0d7377;
+            --primary-dark: #0a5a5d;
+            --accent: #14FFEC;
+            --accent-soft: #7fffe8;
+            
+            --bg-main: #ffffff;
+            --bg-elevated: #f8fafb;
+            --bg-card: #ffffff;
+            
+            --text-primary: #1a1a1a;
+            --text-secondary: #5a5a5a;
+            --text-muted: #8a8a8a;
+            
+            --border-subtle: #e8ecef;
+            --border-emphasis: #d0d7de;
+            
+            --shadow-sm: 0 1px 3px rgba(0,0,0,0.08);
+            --shadow-md: 0 4px 12px rgba(0,0,0,0.1);
+            --shadow-lg: 0 8px 24px rgba(0,0,0,0.12);
+            
+            --highlight-bg: rgba(20, 255, 236, 0.08);
+            --highlight-border: var(--accent);
+            
+            --font-ui: 'Noto Kufi Arabic', 'Amiri', serif;
+            --font-quran: 'Lateef', serif;
+            
+            --base-size: 16px;
+            --scale: 1;
         }
 
         [data-theme="dark"] {
-            --primary: #4DB6AC;
-            --accent: #FFD54F;
-            --bg-main: #121212;
-            --bg-panel: #1e1e1e;
-            --text-main: #e0e0e0;
-            --text-muted: #aaa;
-            --border: #333;
-            --highlight: rgba(255, 213, 79, 0.15);
+            --primary: #14FFEC;
+            --primary-dark: #0dcfc0;
+            --accent: #7fffe8;
+            --accent-soft: #14FFEC;
+            
+            --bg-main: #0d1117;
+            --bg-elevated: #161b22;
+            --bg-card: #1c2128;
+            
+            --text-primary: #e6edf3;
+            --text-secondary: #adbac7;
+            --text-muted: #768390;
+            
+            --border-subtle: #2d333b;
+            --border-emphasis: #444c56;
+            
+            --shadow-sm: 0 1px 3px rgba(0,0,0,0.4);
+            --shadow-md: 0 4px 12px rgba(0,0,0,0.5);
+            --shadow-lg: 0 8px 24px rgba(0,0,0,0.6);
+            
+            --highlight-bg: rgba(20, 255, 236, 0.12);
         }
 
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        
         body { 
-            margin: 0; 
-            font-family: var(--font-ui); 
-            display: flex; 
-            flex-direction: column; 
-            height: 100vh; 
-            overflow: hidden; 
+            font-family: var(--font-ui);
             background: var(--bg-main);
-            color: var(--text-main);
-            transition: background 0.3s, color 0.3s;
+            color: var(--text-primary);
+            display: flex;
+            flex-direction: column;
+            height: 100vh;
+            overflow: hidden;
+            transition: background 0.3s ease, color 0.3s ease;
+            font-size: var(--base-size);
         }
 
-        /* === HEADER === */
+        /* === SLEEK HEADER === */
         header {
-            background: var(--bg-panel);
-            border-bottom: 1px solid var(--border);
-            padding: 10px 15px;
+            background: var(--bg-elevated);
+            border-bottom: 1px solid var(--border-subtle);
+            padding: 12px 20px;
             display: flex;
-            flex-wrap: wrap;
-            gap: 10px;
             justify-content: space-between;
             align-items: center;
-            z-index: 100;
+            gap: 15px;
+            flex-wrap: wrap;
+            box-shadow: var(--shadow-sm);
+            z-index: 1000;
         }
         
-        .logo { font-size: 20px; font-weight: bold; color: var(--primary); display: flex; align-items: center; gap: 10px; }
+        .logo { 
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 18px;
+            font-weight: 600;
+            color: var(--primary);
+            letter-spacing: -0.5px;
+        }
         
-        .controls { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
-        
-        button, select, input {
-            padding: 6px 12px;
-            border-radius: 6px;
-            border: 1px solid var(--border);
-            background: var(--bg-main);
-            color: var(--text-main);
+        .logo svg {
+            width: 28px;
+            height: 28px;
+            filter: drop-shadow(0 2px 4px rgba(13, 115, 119, 0.2));
+        }
+
+        .controls {
+            display: flex;
+            gap: 8px;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+
+        button, select {
+            padding: 8px 14px;
+            border-radius: 8px;
+            border: 1px solid var(--border-subtle);
+            background: var(--bg-card);
+            color: var(--text-primary);
             font-family: var(--font-ui);
             font-size: 14px;
             cursor: pointer;
+            transition: all 0.2s ease;
+            box-shadow: var(--shadow-sm);
         }
         
-        /* Font Size Slider */
-        .font-control { display: flex; align-items: center; gap: 5px; font-size: 12px; }
-        input[type=range] { width: 60px; padding: 0; }
-
-        .search-bar { width: 150px; }
-
-        /* === MAIN LAYOUT === */
-        main { display: flex; flex: 1; overflow: hidden; position: relative; }
-        
-        /* READER PANEL */
-        #reader-panel { 
-            flex: 1; 
-            overflow-y: auto; 
-            padding: 0; 
-            scroll-behavior: smooth;
+        button:hover, select:hover {
+            border-color: var(--primary);
+            box-shadow: var(--shadow-md);
+            transform: translateY(-1px);
         }
 
-        /* SIDE PANEL (Context) */
-        #side-panel { 
-            width: 35%; 
-            max-width: 400px;
-            min-width: 300px;
-            border-inline-start: 1px solid var(--border); 
-            background: var(--bg-panel);
-            display: flex;
-            flex-direction: column;
+        button:active {
+            transform: translateY(0);
         }
 
-        /* === MOBILE LAYOUT (SPLIT SCREEN) === */
-        @media (max-width: 768px) {
-            header { padding: 10px; }
-            .search-bar { width: 100px; }
-            .logo span { display: none; }
-
-            main { flex-direction: column; }
-            
-            #reader-panel {
-                height: 50%;
-                width: 100%;
-                border-bottom: 2px solid var(--border);
-            }
-            
-            #side-panel {
-                height: 50%;
-                width: 100%;
-                min-width: unset;
-                max-width: unset;
-                border-inline-start: none;
-                border-top: 2px solid var(--accent);
-            }
-        }
-
-        /* === VERSE STYLING === */
-        .verse-row {
-            padding: 30px 20px;
-            border-bottom: 1px solid var(--border);
+        .search-container {
             position: relative;
-        }
-        .verse-row.active { background-color: var(--highlight); border-inline-start: 4px solid var(--accent); }
-        
-        .quran-text {
-            font-family: var(--font-quran);
-            font-size: var(--quran-size);
-            line-height: 1.8;
-            color: var(--text-main);
-            margin-bottom: 15px;
-            direction: rtl;
-            text-align: right;
-        }
-        
-        .trans-text {
-            font-size: calc(var(--quran-size) * 0.6);
-            color: var(--text-muted);
-            line-height: 1.5;
+            flex: 1;
+            max-width: 300px;
+            min-width: 180px;
         }
 
-        .verse-num-badge {
-            background: var(--border);
-            color: var(--text-muted);
-            font-size: 12px;
-            padding: 2px 8px;
-            border-radius: 12px;
-            margin-bottom: 10px;
-            display: inline-block;
+        .search-bar {
+            width: 100%;
+            padding: 8px 35px 8px 14px;
+            border-radius: 20px;
+            border: 1px solid var(--border-subtle);
+            background: var(--bg-card);
+            color: var(--text-primary);
+            font-family: var(--font-ui);
+            font-size: 14px;
+            transition: all 0.2s ease;
         }
 
-        /* === CARDS (Context) === */
-        .card {
-            background: var(--bg-main);
-            border: 1px solid var(--border);
+        .search-bar:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(13, 115, 119, 0.1);
+        }
+
+        .search-icon {
+            position: absolute;
+            right: 12px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--text-muted);
+            pointer-events: none;
+        }
+
+        .font-slider {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 4px 12px;
+            background: var(--bg-card);
             border-radius: 8px;
-            padding: 15px;
-            margin-bottom: 10px;
+            border: 1px solid var(--border-subtle);
+        }
+
+        .font-slider input[type="range"] {
+            width: 80px;
+            height: 4px;
+            border: none;
+            background: var(--border-emphasis);
+            border-radius: 2px;
+            outline: none;
             cursor: pointer;
         }
-        .card:hover { border-color: var(--accent); }
-        
-        .badge { font-size: 10px; padding: 2px 6px; border-radius: 4px; font-weight: bold; }
-        .badge-direct { background: #e8f5e9; color: #2e7d32; }
-        .badge-parallel { background: #fff3e0; color: #ef6c00; }
-        [data-theme="dark"] .badge-direct { background: #1b5e20; color: #a5d6a7; }
-        [data-theme="dark"] .badge-parallel { background: #e65100; color: #ffcc80; }
 
-        .hidden { display: none !important; }
-        .loading { text-align: center; padding: 20px; color: var(--text-muted); font-style: italic; }
+        .font-slider input[type="range"]::-webkit-slider-thumb {
+            appearance: none;
+            width: 16px;
+            height: 16px;
+            background: var(--primary);
+            border-radius: 50%;
+            cursor: pointer;
+            transition: transform 0.2s;
+        }
 
+        .font-slider input[type="range"]::-webkit-slider-thumb:hover {
+            transform: scale(1.2);
+        }
+
+        .icon-btn {
+            width: 40px;
+            height: 40px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 0;
+            font-size: 18px;
+            border-radius: 50%;
+        }
+
+        /* === MAIN LAYOUT === */
+        main {
+            display: flex;
+            flex: 1;
+            overflow: hidden;
+            position: relative;
+        }
+
+        /* DESKTOP: Side by Side */
+        #reader-panel {
+            flex: 1;
+            overflow-y: auto;
+            scroll-behavior: smooth;
+            background: var(--bg-main);
+        }
+
+        #context-panel {
+            width: 420px;
+            background: var(--bg-elevated);
+            border-left: 1px solid var(--border-subtle);
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        /* MOBILE: Stacked with Connections Below Active Verse */
+        @media (max-width: 968px) {
+            #context-panel {
+                display: none; /* Hide sidebar on mobile */
+            }
+        }
+
+        /* === VERSE CARDS (MODERN) === */
+        .verse-card {
+            background: var(--bg-card);
+            border-radius: 12px;
+            padding: 24px;
+            margin: 16px 20px;
+            border: 1px solid var(--border-subtle);
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            cursor: pointer;
+            position: relative;
+        }
+
+        .verse-card:hover {
+            box-shadow: var(--shadow-md);
+            transform: translateY(-2px);
+        }
+
+        .verse-card.active {
+            background: var(--highlight-bg);
+            border-color: var(--highlight-border);
+            box-shadow: var(--shadow-lg);
+        }
+
+        .verse-card.active::before {
+            content: '';
+            position: absolute;
+            left: 0;
+            top: 0;
+            bottom: 0;
+            width: 4px;
+            background: linear-gradient(180deg, var(--primary), var(--accent));
+            border-radius: 12px 0 0 12px;
+        }
+
+        .verse-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 16px;
+        }
+
+        .verse-num {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 32px;
+            height: 32px;
+            background: var(--primary);
+            color: white;
+            border-radius: 50%;
+            font-weight: 600;
+            font-size: 14px;
+            box-shadow: var(--shadow-sm);
+        }
+
+        .verse-card.active .verse-num {
+            background: var(--accent);
+            color: var(--primary-dark);
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+        }
+
+        .link-indicator {
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            font-size: 12px;
+            color: var(--text-muted);
+            background: var(--bg-elevated);
+            padding: 4px 10px;
+            border-radius: 12px;
+        }
+
+        .quran-text {
+            font-family: var(--font-quran);
+            font-size: calc(var(--base-size) * var(--scale) * 1.75);
+            line-height: 2;
+            color: var(--text-primary);
+            direction: rtl;
+            text-align: justify;
+            margin-bottom: 16px;
+            word-spacing: 4px;
+        }
+
+        .trans-text {
+            font-size: calc(var(--base-size) * var(--scale));
+            line-height: 1.7;
+            color: var(--text-secondary);
+            font-family: var(--font-ui);
+        }
+
+        /* Mobile: Inline Connections */
+        .inline-connections {
+            display: none;
+            margin-top: 20px;
+            padding-top: 20px;
+            border-top: 2px dashed var(--border-subtle);
+        }
+
+        @media (max-width: 968px) {
+            .verse-card.active .inline-connections {
+                display: block;
+            }
+        }
+
+        .connections-header {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 14px;
+            font-weight: 600;
+            color: var(--primary);
+            margin-bottom: 12px;
+        }
+
+        /* === CONTEXT PANEL === */
+        .panel-header {
+            padding: 20px;
+            border-bottom: 1px solid var(--border-subtle);
+            background: var(--bg-card);
+        }
+
+        .panel-title {
+            font-size: 16px;
+            font-weight: 600;
+            color: var(--primary);
+            margin-bottom: 4px;
+        }
+
+        .panel-subtitle {
+            font-size: 13px;
+            color: var(--text-muted);
+        }
+
+        .panel-content {
+            flex: 1;
+            overflow-y: auto;
+            padding: 16px;
+        }
+
+        /* === LINK CARDS === */
+        .link-card {
+            background: var(--bg-card);
+            border-radius: 10px;
+            padding: 16px;
+            margin-bottom: 12px;
+            border: 1px solid var(--border-subtle);
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .link-card:hover {
+            border-color: var(--primary);
+            box-shadow: var(--shadow-md);
+            transform: translateX(-4px);
+        }
+
+        .link-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+
+        .link-ref {
+            font-weight: 600;
+            color: var(--primary);
+            font-size: 13px;
+        }
+
+        .badge {
+            display: inline-block;
+            padding: 3px 10px;
+            border-radius: 12px;
+            font-size: 11px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .badge-direct {
+            background: linear-gradient(135deg, #84fab0 0%, #8fd3f4 100%);
+            color: #0a5a5d;
+        }
+
+        .badge-parallel {
+            background: linear-gradient(135deg, #ffecd2 0%, #fcb69f 100%);
+            color: #8b4513;
+        }
+
+        [data-theme="dark"] .badge-direct {
+            background: linear-gradient(135deg, #2d6a4f 0%, #1b4965 100%);
+            color: #84fab0;
+        }
+
+        [data-theme="dark"] .badge-parallel {
+            background: linear-gradient(135deg, #ae5d3f 0%, #8b4513 100%);
+            color: #ffecd2;
+        }
+
+        .link-text {
+            font-family: var(--font-quran);
+            font-size: calc(var(--base-size) * var(--scale) * 1.3);
+            line-height: 1.8;
+            color: var(--text-primary);
+            direction: rtl;
+            margin-bottom: 8px;
+        }
+
+        .link-trans {
+            font-size: calc(var(--base-size) * var(--scale) * 0.9);
+            color: var(--text-secondary);
+            line-height: 1.6;
+        }
+
+        /* === UTILITIES === */
+        .loading {
+            text-align: center;
+            padding: 40px 20px;
+            color: var(--text-muted);
+            font-style: italic;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 60px 20px;
+            color: var(--text-muted);
+        }
+
+        .empty-state svg {
+            width: 64px;
+            height: 64px;
+            margin-bottom: 16px;
+            opacity: 0.4;
+        }
+
+        /* === SCROLLBAR === */
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: var(--bg-elevated);
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: var(--border-emphasis);
+            border-radius: 4px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: var(--primary);
+        }
+
+        /* === RESPONSIVE === */
+        @media (max-width: 768px) {
+            header {
+                padding: 10px 12px;
+            }
+
+            .logo span {
+                display: none;
+            }
+
+            .search-container {
+                max-width: 150px;
+                min-width: 120px;
+            }
+
+            .font-slider {
+                padding: 4px 8px;
+            }
+
+            .font-slider span {
+                font-size: 12px;
+            }
+
+            .font-slider input[type="range"] {
+                width: 60px;
+            }
+
+            .verse-card {
+                margin: 12px;
+                padding: 18px;
+            }
+
+            .quran-text {
+                font-size: calc(var(--base-size) * var(--scale) * 1.5);
+            }
+        }
+
+        /* Loading Animation */
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        .spinner {
+            display: inline-block;
+            width: 24px;
+            height: 24px;
+            border: 3px solid var(--border-subtle);
+            border-top-color: var(--primary);
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+        }
     </style>
 </head>
 <body>
 
 <header>
     <div class="logo">
-        <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2L2 7l10 5 10-5-10-5zm0 9l2.5-1.25L12 8.5l-2.5 1.25L12 11zm0 2.5l-5-2.5-5 2.5L12 22l10-8.5-5-2.5-5 2.5z"/></svg>
-        <span>QuranViz</span>
+        <svg viewBox="0 0 24 24" fill="currentColor">
+            <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/>
+        </svg>
+        <span id="logo-text">QuranViz</span>
     </div>
     
     <div class="controls">
-        <input type="text" id="search-input" class="search-bar" placeholder="Search..." onkeyup="handleSearch(event)">
+        <div class="search-container">
+            <input type="text" id="search-input" class="search-bar" placeholder="بحث..." onkeyup="handleSearch(event)">
+            <span class="search-icon">🔍</span>
+        </div>
         
         <select id="surah-select" onchange="changeSurah(this.value)"></select>
         
-        <div class="font-control">
-            <span>A</span>
-            <input type="range" min="18" max="48" value="28" oninput="changeFontSize(this.value)">
-            <span style="font-size:16px; font-weight:bold">A</span>
+        <div class="font-slider">
+            <span style="font-size: 12px;">أ</span>
+            <input type="range" min="0.7" max="1.5" step="0.1" value="1" oninput="changeFontSize(this.value)">
+            <span style="font-size: 18px; font-weight: 600;">أ</span>
         </div>
 
-        <button onclick="toggleTheme()" id="theme-btn">🌙</button>
-        
-        <button onclick="toggleLang()" id="lang-btn">EN</button>
+        <button class="icon-btn" onclick="toggleTheme()" id="theme-btn">🌙</button>
+        <button class="icon-btn" onclick="toggleLang()" id="lang-btn">EN</button>
     </div>
 </header>
 
 <main>
     <div id="reader-panel">
         <div id="quran-container">
-            <div class="loading">Loading...</div>
+            <div class="loading">
+                <div class="spinner"></div>
+                <p style="margin-top: 12px;">جار التحميل...</p>
+            </div>
         </div>
     </div>
 
-    <aside id="side-panel">
-        <div style="padding: 15px; border-bottom: 1px solid var(--border); font-weight:bold; color:var(--primary)" id="panel-title">
-            Cross-References
+    <aside id="context-panel">
+        <div class="panel-header">
+            <div class="panel-title" id="panel-title">الروابط المرجعية</div>
+            <div class="panel-subtitle" id="panel-subtitle">اختر آية للمتابعة</div>
         </div>
-        <div id="panel-content" style="flex:1; overflow-y:auto; padding:15px;">
-            <div style="text-align: center; color: var(--text-muted); margin-top: 50px;">
-                Start reading to see connections.
+        <div class="panel-content" id="panel-content">
+            <div class="empty-state">
+                <svg viewBox="0 0 24 24" fill="currentColor">
+                    <path d="M13 7h-2v4H7v2h4v4h2v-4h4v-2h-4V7zm-1-5C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8z"/>
+                </svg>
+                <p>اقرأ لرؤية الروابط</p>
             </div>
         </div>
     </aside>
 </main>
 
 <script>
-    // ==========================================
-    // 1. PASTE YOUR QURAN_LINKS.JS DATA HERE
-    // ==========================================
-    // Replace this dummy data with your FULL dataset
     const QURAN_LINKS = {
         "1:2": [{surah: 26, verse: 23, type: "Direct"}, {surah: 26, verse: 24, type: "Direct"}],
         "1:4": [{surah: 82, verse: 19, type: "Direct"}],
         "1:6": [{surah: 2, verse: 142, type: "Parallel"}]
     };
-    // ==========================================
 
     const STATE = {
         lang: 'ar',
         currentSurah: 1,
         activeVerseKey: null,
-        theme: 'light'
+        theme: 'light',
+        scale: 1
     };
 
     const UI = {
         ar: { 
-            title: "القرآن المترابط", 
-            search: "بحث...", 
-            refs: "الروابط", 
-            lang: "EN", 
-            loading: "جار التحميل...", 
-            noLinks: "لا توجد روابط",
+            title: "القرآن المترابط",
+            logoText: "QuranViz",
+            search: "بحث...",
+            refs: "الروابط المرجعية",
+            subtitle: "اختر آية للمتابعة",
+            lang: "EN",
+            loading: "جار التحميل...",
+            noLinks: "لا توجد روابط لهذه الآية",
             direct: "مباشر",
             parallel: "متوازي",
-            results: "النتائج",
+            results: "نتائج البحث",
             noResults: "لا توجد نتائج",
             searchError: "خطأ في البحث",
-            startReading: "ابدأ القراءة لرؤية الروابط"
+            startReading: "اقرأ لرؤية الروابط",
+            connections: "روابط",
+            linkedVerses: "آيات مرتبطة"
         },
         en: { 
-            title: "QuranViz", 
-            search: "Search...", 
-            refs: "Connections", 
-            lang: "عربي", 
-            loading: "Loading...", 
-            noLinks: "No links found",
+            title: "Interconnected Quran",
+            logoText: "QuranViz",
+            search: "Search...",
+            refs: "Cross-References",
+            subtitle: "Select a verse to continue",
+            lang: "عر",
+            loading: "Loading...",
+            noLinks: "No links for this verse",
             direct: "Direct",
             parallel: "Parallel",
-            results: "Results",
+            results: "Search Results",
             noResults: "No results found",
-            searchError: "Error searching",
-            startReading: "Start reading to see connections."
+            searchError: "Search error",
+            startReading: "Start reading to see links",
+            connections: "Links",
+            linkedVerses: "Linked Verses"
         }
     };
 
-    // INIT
     document.addEventListener('DOMContentLoaded', () => {
         populateSurahSelect();
-        // Check system theme preference
         if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
             toggleTheme();
         }
@@ -289,7 +681,6 @@
         updateUIText();
     });
 
-    // --- UI FUNCTIONS ---
     function toggleTheme() {
         STATE.theme = STATE.theme === 'light' ? 'dark' : 'light';
         document.documentElement.setAttribute('data-theme', STATE.theme);
@@ -297,44 +688,37 @@
     }
 
     function changeFontSize(val) {
-        document.documentElement.style.setProperty('--quran-size', val + 'px');
+        STATE.scale = parseFloat(val);
+        document.documentElement.style.setProperty('--scale', val);
     }
 
     function toggleLang() {
         STATE.lang = STATE.lang === 'ar' ? 'en' : 'ar';
         const isAr = STATE.lang === 'ar';
         document.documentElement.dir = isAr ? 'rtl' : 'ltr';
-        loadSurah(STATE.currentSurah); // Reload to fetch correct translation
+        loadSurah(STATE.currentSurah);
         updateUIText();
     }
 
     function updateUIText() {
         const txt = UI[STATE.lang];
-        document.querySelector('.logo span').innerText = txt.title;
+        document.getElementById('logo-text').innerText = txt.logoText;
         document.getElementById('search-input').placeholder = txt.search;
         document.getElementById('panel-title').innerText = txt.refs;
+        document.getElementById('panel-subtitle').innerText = txt.subtitle;
         document.getElementById('lang-btn').innerText = txt.lang;
-        
-        // Update the default message in panel if it's still showing
-        const panelContent = document.getElementById('panel-content');
-        if (panelContent.innerHTML.includes('Start reading') || panelContent.innerHTML.includes('ابدأ')) {
-            panelContent.innerHTML = `<div style="text-align: center; color: var(--text-muted); margin-top: 50px;">${txt.startReading}</div>`;
-        }
     }
 
-    // --- CORE LOGIC ---
     async function loadSurah(surahId, scrollToVerse = null) {
         STATE.currentSurah = parseInt(surahId);
         const container = document.getElementById('quran-container');
-        container.innerHTML = `<div class="loading">${UI[STATE.lang].loading}</div>`;
+        const txt = UI[STATE.lang];
+        
+        container.innerHTML = `<div class="loading"><div class="spinner"></div><p style="margin-top: 12px;">${txt.loading}</p></div>`;
         document.getElementById('surah-select').value = surahId;
 
         try {
-            // API LOGIC:
-            // AR Mode: Get 'quran-uthmani' only. (No Translation)
-            // EN Mode: Get 'quran-uthmani' + 'en.sahih'
-            
-            let editions = 'quran-uthmani'; 
+            let editions = 'quran-uthmani';
             if (STATE.lang === 'en') editions += ',en.sahih';
 
             const res = await fetch(`https://api.alquran.cloud/v1/surah/${surahId}/editions/${editions}`);
@@ -347,25 +731,39 @@
 
             ayahs.forEach((ayah, idx) => {
                 const verseKey = `${surahId}:${ayah.numberInSurah}`;
-                const div = document.createElement('div');
-                div.className = 'verse-row';
-                div.id = `verse-${verseKey}`;
-                div.dataset.key = verseKey;
+                const hasLinks = QURAN_LINKS[verseKey] && QURAN_LINKS[verseKey].length > 0;
                 
-                let html = `<span class="verse-num-badge">${ayah.numberInSurah}</span>`;
-                html += `<div class="quran-text">${ayah.text}</div>`;
-                if (trans) html += `<div class="trans-text">${trans[idx].text}</div>`;
+                const card = document.createElement('div');
+                card.className = 'verse-card';
+                card.id = `verse-${verseKey}`;
+                card.dataset.key = verseKey;
+                
+                let html = `
+                    <div class="verse-header">
+                        <span class="verse-num">${ayah.numberInSurah}</span>
+                        ${hasLinks ? `<span class="link-indicator">🔗 ${QURAN_LINKS[verseKey].length}</span>` : ''}
+                    </div>
+                    <div class="quran-text">${ayah.text}</div>
+                `;
+                
+                if (trans) {
+                    html += `<div class="trans-text">${trans[idx].text}</div>`;
+                }
 
-                div.innerHTML = html;
-                div.onclick = () => activateVerse(verseKey);
-                observer.observe(div);
-                container.appendChild(div);
+                if (hasLinks) {
+                    html += `<div class="inline-connections" id="inline-${verseKey}"></div>`;
+                }
+
+                card.innerHTML = html;
+                card.onclick = () => activateVerse(verseKey);
+                observer.observe(card);
+                container.appendChild(card);
             });
 
             if (scrollToVerse) {
                 setTimeout(() => {
                     const el = document.getElementById(`verse-${surahId}:${scrollToVerse}`);
-                    if(el) {
+                    if (el) {
                         el.scrollIntoView({behavior: "smooth", block: "center"});
                         activateVerse(`${surahId}:${scrollToVerse}`);
                     }
@@ -376,10 +774,9 @@
         }
     }
 
-    // --- OBSERVER ---
     const observer = new IntersectionObserver((entries) => {
         entries.forEach(entry => {
-            if(entry.isIntersecting && entry.intersectionRatio > 0.6) {
+            if (entry.isIntersecting && entry.intersectionRatio > 0.6) {
                 activateVerse(entry.target.dataset.key);
             }
         });
@@ -389,103 +786,114 @@
         if (STATE.activeVerseKey === key) return;
         STATE.activeVerseKey = key;
 
-        document.querySelectorAll('.verse-row').forEach(d => d.classList.remove('active'));
+        document.querySelectorAll('.verse-card').forEach(d => d.classList.remove('active'));
         const el = document.getElementById(`verse-${key}`);
-        if(el) el.classList.add('active');
+        if (el) el.classList.add('active');
 
         loadContext(key);
     }
 
-    // --- LOAD CONNECTIONS ---
     async function loadContext(key) {
         const txt = UI[STATE.lang];
-        document.getElementById('panel-title').innerText = `${txt.refs} (${key})`;
-        const container = document.getElementById('panel-content');
+        document.getElementById('panel-title').innerText = `${txt.refs}`;
+        document.getElementById('panel-subtitle').innerText = key;
+        
+        const sidebarContent = document.getElementById('panel-content');
+        const inlineContent = document.getElementById(`inline-${key}`);
         
         const links = QURAN_LINKS[key];
 
         if (!links || links.length === 0) {
-            container.innerHTML = `<div style="padding:20px; text-align:center; color:var(--text-muted)">${txt.noLinks}</div>`;
+            sidebarContent.innerHTML = `<div class="empty-state"><p>${txt.noLinks}</p></div>`;
+            if (inlineContent) inlineContent.innerHTML = '';
             return;
         }
 
-        container.innerHTML = `<div class="loading">${txt.loading}</div>`;
-        
-        // Decide which edition to fetch for references
-        // If App is in Arabic, fetch Arabic text. If English, fetch English translation.
-        const refEdition = STATE.lang === 'ar' ? 'quran-uthmani' : 'en.sahih';
+        const loadingHTML = `<div class="loading"><div class="spinner"></div></div>`;
+        sidebarContent.innerHTML = loadingHTML;
+        if (inlineContent) inlineContent.innerHTML = loadingHTML;
+
+        const refEdition = STATE.lang === 'ar' ? 'quran-uthmani,en.sahih' : 'en.sahih,quran-uthmani';
 
         let html = '';
+        let mobileHTML = `<div class="connections-header">🔗 ${txt.linkedVerses}</div>`;
+        
         for (const link of links) {
             try {
-                // Fetch each link
-                const res = await fetch(`https://api.alquran.cloud/v1/ayah/${link.surah}:${link.verse}/${refEdition}`);
+                const res = await fetch(`https://api.alquran.cloud/v1/ayah/${link.surah}:${link.verse}/editions/${refEdition}`);
                 const d = await res.json();
                 
-                const text = d.data.text;
-                const meta = d.data.surah;
+                const primaryText = d.data[0].text;
+                const secondaryText = d.data.length > 1 ? d.data[1].text : '';
+                const meta = d.data[0].surah;
                 const surahName = STATE.lang === 'ar' ? meta.name : meta.englishName;
                 
                 const badge = link.type === 'Parallel' ? 'badge-parallel' : 'badge-direct';
                 const badgeTxt = link.type === 'Parallel' ? txt.parallel : txt.direct;
 
-                // Styling text based on language
-                const textStyle = STATE.lang === 'ar' 
-                    ? 'font-family:var(--font-quran); font-size:22px; direction:rtl;' 
-                    : 'font-size:14px; direction:ltr;';
+                const isAr = STATE.lang === 'ar';
+                const mainText = isAr ? primaryText : secondaryText;
+                const subText = isAr ? secondaryText : primaryText;
 
-                html += `
-                <div class="card" onclick="jumpToVerse(${link.surah}, ${link.verse})">
-                    <div style="display:flex; justify-content:space-between; margin-bottom:5px;">
-                        <span style="font-weight:bold; color:var(--primary)">${surahName} ${link.surah}:${link.verse}</span>
+                const cardHTML = `
+                <div class="link-card" onclick="jumpToVerse(${link.surah}, ${link.verse})">
+                    <div class="link-header">
+                        <span class="link-ref">${surahName} ${link.surah}:${link.verse}</span>
                         <span class="badge ${badge}">${badgeTxt}</span>
                     </div>
-                    <div style="${textStyle}">${text}</div>
+                    <div class="link-text">${mainText}</div>
+                    ${subText ? `<div class="link-trans">${subText}</div>` : ''}
                 </div>`;
-            } catch(e) {}
+
+                html += cardHTML;
+                mobileHTML += cardHTML;
+            } catch(e) {
+                console.error('Failed to load link:', e);
+            }
         }
-        container.innerHTML = html;
+        
+        sidebarContent.innerHTML = html;
+        if (inlineContent) inlineContent.innerHTML = mobileHTML;
     }
 
-    // --- SEARCH ---
     async function handleSearch(e) {
         if (e.key === 'Enter') {
             const query = e.target.value.trim();
-            if(!query) return;
+            if (!query) return;
 
             const txt = UI[STATE.lang];
             const panel = document.getElementById('panel-content');
             document.getElementById('panel-title').innerText = txt.results;
-            panel.innerHTML = `<div class="loading">${txt.loading}</div>`;
+            document.getElementById('panel-subtitle').innerText = `"${query}"`;
+            panel.innerHTML = `<div class="loading"><div class="spinner"></div></div>`;
 
             try {
-                // Use the correct edition based on language
                 const edition = STATE.lang === 'ar' ? 'quran-uthmani' : 'en.sahih';
-                
                 const res = await fetch(`https://api.alquran.cloud/v1/search/${encodeURIComponent(query)}/all/${edition}`);
                 const data = await res.json();
                 
-                if(!data.data || !data.data.matches || data.data.matches.length === 0) {
-                    panel.innerHTML = `<div style="padding:20px; text-align:center; color:var(--text-muted)">${txt.noResults}</div>`;
+                if (!data.data || !data.data.matches || data.data.matches.length === 0) {
+                    panel.innerHTML = `<div class="empty-state"><p>${txt.noResults}</p></div>`;
                     return;
                 }
 
                 let html = '';
-                data.data.matches.forEach(m => {
+                data.data.matches.slice(0, 20).forEach(m => {
                     const surahName = STATE.lang === 'ar' ? m.surah.name : m.surah.englishName;
-                    const textStyle = STATE.lang === 'ar' ? 'font-family:var(--font-quran); font-size:20px; direction:rtl;' : 'font-size:14px; direction:ltr;';
 
                     html += `
-                    <div class="card" onclick="jumpToVerse(${m.surah.number}, ${m.numberInSurah})">
-                        <div style="font-weight:bold; color:var(--primary)">${surahName} (${m.numberInSurah})</div>
-                        <div style="${textStyle}">${m.text}</div>
+                    <div class="link-card" onclick="jumpToVerse(${m.surah.number}, ${m.numberInSurah})">
+                        <div class="link-header">
+                            <span class="link-ref">${surahName} ${m.surah.number}:${m.numberInSurah}</span>
+                        </div>
+                        <div class="link-text">${m.text}</div>
                     </div>`;
                 });
                 panel.innerHTML = html;
 
             } catch (e) {
                 console.error('Search error:', e);
-                panel.innerHTML = `<div style="padding:20px; text-align:center; color:red">${txt.searchError}</div>`;
+                panel.innerHTML = `<div class="empty-state" style="color:red"><p>${txt.searchError}</p></div>`;
             }
         }
     }
@@ -509,10 +917,17 @@
 
     function populateSurahSelect() {
         const sel = document.getElementById('surah-select');
-        for(let i=1; i<=114; i++) {
+        const surahNames = {
+            1: "الفاتحة", 2: "البقرة", 3: "آل عمران", 4: "النساء", 5: "المائدة",
+            6: "الأنعام", 7: "الأعراف", 8: "الأنفال", 9: "التوبة", 10: "يونس"
+        };
+        
+        for (let i = 1; i <= 114; i++) {
             const opt = document.createElement('option');
             opt.value = i;
-            opt.innerText = STATE.lang === 'ar' ? i : `Surah ${i}`;
+            opt.innerText = STATE.lang === 'ar' 
+                ? `${i}. ${surahNames[i] || `سورة ${i}`}` 
+                : `Surah ${i}`;
             sel.appendChild(opt);
         }
     }
