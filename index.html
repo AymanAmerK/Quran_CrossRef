@@ -1,0 +1,215 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quran Cross-Reference Reader</title>
+    <style>
+        :root {
+            --primary: #1a5f48;
+            --bg-left: #fdfdfd;
+            --bg-right: #f4f6f5;
+            --highlight: #e8f5e9;
+            --border: #ddd;
+        }
+        body { margin: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; display: flex; height: 100vh; overflow: hidden; }
+        
+        /* LAYOUT */
+        #reader-panel { width: 50%; overflow-y: auto; padding: 20px; border-right: 1px solid var(--border); background: var(--bg-left); }
+        #context-panel { width: 50%; overflow-y: auto; padding: 20px; background: var(--bg-right); }
+
+        /* TYPOGRAPHY */
+        .verse-container { padding: 15px; border-bottom: 1px solid #eee; transition: background 0.3s; cursor: pointer; }
+        .verse-container.active { background-color: var(--highlight); border-left: 5px solid var(--primary); }
+        
+        .arabic { font-family: 'Amiri', serif; font-size: 26px; direction: rtl; line-height: 1.8; margin-bottom: 10px; color: #333; }
+        .english { font-size: 16px; color: #555; line-height: 1.5; }
+        .verse-num { font-size: 12px; color: #999; margin-bottom: 5px; font-weight: bold; text-transform: uppercase; }
+
+        /* BADGES */
+        .badge { display: inline-block; padding: 2px 8px; border-radius: 4px; font-size: 11px; font-weight: bold; margin-bottom: 5px; }
+        .badge-parallel { background: #fff3cd; color: #856404; border: 1px solid #ffeeba; }
+        .badge-direct { background: #d4edda; color: #155724; border: 1px solid #c3e6cb; }
+
+        /* LOADING & HEADERS */
+        h2 { margin-top: 0; color: var(--primary); border-bottom: 2px solid var(--border); padding-bottom: 10px; }
+        .loading { color: #888; font-style: italic; padding: 20px; text-align: center; }
+        
+        /* CARD IN RIGHT PANEL */
+        .link-card { background: white; border: 1px solid var(--border); border-radius: 8px; padding: 15px; margin-bottom: 15px; box-shadow: 0 2px 5px rgba(0,0,0,0.05); }
+        .link-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; border-bottom: 1px solid #eee; padding-bottom: 5px; }
+        .link-ref { font-weight: bold; color: var(--primary); }
+
+    </style>
+    <link href="https://fonts.googleapis.com/css2?family=Amiri&display=swap" rel="stylesheet">
+    <script src="quran_links.js"></script>
+</head>
+<body>
+
+    <div id="reader-panel">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+            <h2>Sūrah Al-Fātiḥah (1)</h2>
+            <select id="surah-selector" onchange="loadSurah(this.value)">
+                </select>
+        </div>
+        <div id="quran-text">
+            <div class="loading">Loading Surah...</div>
+        </div>
+    </div>
+
+    <div id="context-panel">
+        <h2>Cross-References</h2>
+        <div id="connections-list">
+            <div style="padding: 20px; color: #666;">
+                Scroll through the verses on the left to see connected passages here.
+            </div>
+        </div>
+    </div>
+
+<script>
+    // === CONFIGURATION ===
+    let currentSurah = 1;
+    // We use AlQuran Cloud API (Uthmani for Arabic, Asad for English)
+    const API_BASE = "https://api.alquran.cloud/v1";
+
+    // === INITIALIZATION ===
+    document.addEventListener('DOMContentLoaded', () => {
+        populateSurahList();
+        loadSurah(1);
+    });
+
+    // === FUNCTION 1: LOAD MAIN SURAH ===
+    async function loadSurah(surahNum) {
+        currentSurah = surahNum;
+        const container = document.getElementById('quran-text');
+        container.innerHTML = '<div class="loading">Fetching Surah text...</div>';
+        document.getElementById('connections-list').innerHTML = '<div style="padding:20px; color:#666;">Connections will appear here...</div>';
+
+        try {
+            // Fetch Arabic and English editions
+            const response = await fetch(`${API_BASE}/surah/${surahNum}/editions/quran-uthmani,en.asad`);
+            const data = await response.json();
+            
+            const arabicData = data.data[0].ayahs;
+            const englishData = data.data[1].ayahs;
+
+            container.innerHTML = ''; // Clear loading
+
+            arabicData.forEach((ayah, index) => {
+                const engAyah = englishData[index];
+                const verseNum = ayah.numberInSurah;
+                const verseKey = `${surahNum}:${verseNum}`;
+
+                // Create Verse Element
+                const div = document.createElement('div');
+                div.className = 'verse-container';
+                div.id = `verse-${verseKey}`;
+                div.dataset.key = verseKey;
+                
+                // Content
+                div.innerHTML = `
+                    <div class="verse-num">Verse ${verseNum}</div>
+                    <div class="arabic">${ayah.text}</div>
+                    <div class="english">${engAyah.text}</div>
+                `;
+
+                // Add Click Event (Manual Select)
+                div.onclick = () => highlightVerse(verseKey);
+
+                // Add Intersection Observer (Auto Select on Scroll)
+                observer.observe(div);
+                
+                container.appendChild(div);
+            });
+
+        } catch (err) {
+            container.innerHTML = `<div class="loading" style="color:red">Error loading text: ${err.message}</div>`;
+        }
+    }
+
+    // === FUNCTION 2: SCROLL DETECTION ===
+    // This watches which verse is visible on screen
+    const observer = new IntersectionObserver((entries) => {
+        entries.forEach(entry => {
+            if (entry.isIntersecting) {
+                // Determine which element is most central
+                highlightVerse(entry.target.dataset.key);
+            }
+        });
+    }, { root: document.getElementById('reader-panel'), threshold: 0.6 }); // Trigger when 60% visible
+
+    // === FUNCTION 3: SHOW CONNECTIONS ===
+    function highlightVerse(key) {
+        // 1. Highlight Left Side
+        document.querySelectorAll('.verse-container').forEach(el => el.classList.remove('active'));
+        const activeEl = document.getElementById(`verse-${key}`);
+        if(activeEl) activeEl.classList.add('active');
+
+        // 2. Load Right Side Data
+        loadConnections(key);
+    }
+
+    async function loadConnections(key) {
+        const container = document.getElementById('connections-list');
+        const links = QURAN_LINKS[key]; // From our generated JS file
+
+        if (!links || links.length === 0) {
+            container.innerHTML = `<div style="padding:20px; color:#999; text-align:center;">No cross-references found for Verse ${key.split(':')[1]}.</div>`;
+            return;
+        }
+
+        container.innerHTML = '<div class="loading">Loading connected verses...</div>';
+        
+        let html = '';
+        
+        // Group links to minimize API calls (optional optimization, here we just fetch)
+        // Note: For production, we would batch these requests. For MVP, we fetch individually.
+        
+        for (const link of links) {
+            const typeBadge = link.type === 'Parallel' 
+                ? `<span class="badge badge-parallel">Parallel (pp)</span>` 
+                : `<span class="badge badge-direct">Direct Link</span>`;
+
+            try {
+                // Fetch the specific connected verse text
+                // Check local cache or fetch
+                const res = await fetch(`${API_BASE}/ayah/${link.surah}:${link.verse}/editions/quran-uthmani,en.asad`);
+                const apiData = await res.json();
+                
+                if(apiData.data) {
+                    const arb = apiData.data[0].text;
+                    const eng = apiData.data[1].text;
+                    const meta = apiData.data[0].surah; // To get Surah Name
+
+                    html += `
+                        <div class="link-card">
+                            <div class="link-header">
+                                <span class="link-ref">Q ${link.surah}:${link.verse} (${meta.englishName})</span>
+                                ${typeBadge}
+                            </div>
+                            <div class="arabic" style="font-size: 20px;">${arb}</div>
+                            <div class="english" style="font-size: 14px;">${eng}</div>
+                        </div>
+                    `;
+                }
+            } catch (e) {
+                console.error("Failed to load link", e);
+            }
+        }
+
+        container.innerHTML = html;
+    }
+
+    // Helper: Populate Dropdown (Simple version)
+    function populateSurahList() {
+        const select = document.getElementById('surah-selector');
+        for(let i=1; i<=114; i++) {
+            const opt = document.createElement('option');
+            opt.value = i;
+            opt.innerText = `Surah ${i}`;
+            select.appendChild(opt);
+        }
+    }
+</script>
+</body>
+</html>
