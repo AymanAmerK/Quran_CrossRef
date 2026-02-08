@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>QuranViz Pro</title>
+    <link rel="stylesheet" href="styles.css">
+    <link href="https://fonts.googleapis.com/css2?family=Amiri&family=Scheherazade+New&display=swap" rel="stylesheet">
+</head>
+<body class="light-mode">
+    <header>
+        <nav id="top-nav">
+            <select id="surah-selector">
+                <option value="">Select Surah</option>
+            </select>
+            <div class="view-toggle">
+                <button id="study-mode-btn" class="active" onclick="setViewMode('study')">Study</button>
+                <button id="reading-mode-btn" onclick="setViewMode('reading')">Reading</button>
+            </div>
+            <button id="search-toggle-btn">🔍</button>
+        </nav>
+    </header>
+
+    <main id="app-container">
+        <!-- Content will be dynamically injected here -->
+        <div id="content-area"></div>
+    </main>
+
+    <footer id="connections-footer" class="hidden">
+        <div class="footer-handle"></div>
+        <div id="footer-content"></div>
+    </footer>
+
+    <nav id="bottom-nav">
+        <button id="home-btn">🏠</button>
+        <button id="bookmarks-btn">🔖</button>
+        <button id="quick-jump-btn">🚀</button>
+        <button id="settings-btn">⚙️</button>
+    </nav>
+
+    <!-- Modals -->
+    <div id="modal-overlay" class="hidden">
+        <div id="modal-content">
+            <button class="close-modal">&times;</button>
+            <div id="modal-body"></div>
+        </div>
+    </div>
+
+    <!-- Data scripts -->
+    <script src="quran_links.js"></script>
+    <script src="app.js"></script>
+</body>
+</html>
