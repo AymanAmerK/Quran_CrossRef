@@ -145,13 +145,13 @@ async function fetchQuranData(endpoint) {
             // For api.alquran.cloud, we can try using their JSONP support if available, 
             // but usually, we can use a fetch with 'no-cors' only for simple requests.
             // Since we need the data, we'll try a standard fetch first and fallback to an informative error.
-            const response = await fetch(\`\${API_BASE}/\${endpoint}\`);
+            const response = await fetch(`${API_BASE}/${endpoint}`);
             if (!response.ok) throw new Error('Network response was not ok');
             const data = await response.json();
             state.cache[endpoint] = data.data;
             return data.data;
         } else {
-            const response = await fetch(\`\${API_BASE}/\${endpoint}\`);
+            const response = await fetch(`${API_BASE}/${endpoint}`);
             const data = await response.json();
             state.cache[endpoint] = data.data;
             return data.data;
@@ -168,16 +168,16 @@ async function fetchQuranData(endpoint) {
 
 async function getSurah(surahNumber) {
     const [arabic, english] = await Promise.all([
-        fetchQuranData(\`surah/\${surahNumber}/quran-uthmani\`),
-        fetchQuranData(\`surah/\${surahNumber}/en.asad\`)
+        fetchQuranData(`surah/${surahNumber}/quran-uthmani`),
+        fetchQuranData(`surah/${surahNumber}/en.asad`)
     ]);
     return { arabic, english };
 }
 
 async function getPage(pageNumber) {
     const [arabic, english] = await Promise.all([
-        fetchQuranData(\`page/\${pageNumber}/quran-uthmani\`),
-        fetchQuranData(\`page/\${pageNumber}/en.asad\`)
+        fetchQuranData(`page/${pageNumber}/quran-uthmani`),
+        fetchQuranData(`page/${pageNumber}/en.asad`)
     ]);
     return { arabic, english };
 }
@@ -203,7 +203,7 @@ function populateSurahSelector() {
     SURAH_NAMES.forEach(surah => {
         const option = document.createElement('option');
         option.value = surah.id;
-        option.textContent = \`\${surah.id}. \${surah.englishName} (\${surah.name})\`;
+        option.textContent = `${surah.id}. ${surah.englishName} (${surah.name})`;
         surahSelector.appendChild(option);
     });
 }
@@ -225,28 +225,28 @@ function setupEventListeners() {
 
 // Settings Functionality
 function showSettings() {
-    let html = \`
+    let html = `
         <h3>Settings</h3>
         <div style="margin: 1.5rem 0;">
             <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
                 <span>Dark Mode</span>
                 <button onclick="toggleTheme()" style="padding: 0.5rem 1rem; border-radius: 20px; border: 1px solid var(--border-color); background: var(--card-bg); color: var(--text-color); cursor: pointer;">
-                    \${document.body.classList.contains('dark-mode') ? '🌙 On' : '☀️ Off'}
+                    ${document.body.classList.contains('dark-mode') ? '🌙 On' : '☀️ Off'}
                 </button>
             </div>
             <div style="margin-bottom: 1rem;">
                 <label style="display: block; margin-bottom: 0.5rem;">Font Size</label>
-                <input type="range" min="1" max="3" step="0.1" value="\${state.fontSize || 1.5}" oninput="updateFontSize(this.value)" style="width: 100%;">
+                <input type="range" min="1" max="3" step="0.1" value="${state.fontSize || 1.5}" oninput="updateFontSize(this.value)" style="width: 100%;">
             </div>
             <div style="margin-bottom: 1rem;">
                 <label style="display: block; margin-bottom: 0.5rem;">Translation Language</label>
                 <select id="setting-lang" onchange="updateLanguage(this.value)" style="width: 100%; padding: 0.5rem;">
-                    <option value="en" \${state.language === 'en' ? 'selected' : ''}>English (Asad)</option>
-                    <option value="ar" \${state.language === 'ar' ? 'selected' : ''}>Arabic (Tafsir coming soon)</option>
+                    <option value="en" ${state.language === 'en' ? 'selected' : ''}>English (Asad)</option>
+                    <option value="ar" ${state.language === 'ar' ? 'selected' : ''}>Arabic (Tafsir coming soon)</option>
                 </select>
             </div>
         </div>
-    \`;
+    `;
     modalBody.innerHTML = html;
     modalOverlay.classList.remove('hidden');
 }
@@ -259,7 +259,7 @@ function toggleTheme() {
 
 function updateFontSize(val) {
     state.fontSize = val;
-    document.documentElement.style.setProperty('--font-size-arabic', \`\${val}rem\`);
+    document.documentElement.style.setProperty('--font-size-arabic', `${val}rem`);
 }
 
 function updateLanguage(lang) {
@@ -271,11 +271,11 @@ function updateLanguage(lang) {
 // Search Functionality
 let searchTimeout;
 function showSearch() {
-    let html = \`
+    let html = `
         <h3>Search Quran</h3>
         <input type="text" id="search-input" placeholder="Search Arabic or English..." style="width: 100%; padding: 0.75rem; margin: 1rem 0; border: 1px solid var(--border-color); border-radius: 4px;">
         <div id="search-results" style="max-height: 50vh; overflow-y: auto;"></div>
-    \`;
+    `;
     modalBody.innerHTML = html;
     modalOverlay.classList.remove('hidden');
 
@@ -293,7 +293,7 @@ async function performSearch(query) {
     resultsArea.innerHTML = '<p>Searching...</p>';
 
     try {
-        const response = await fetch(\`\${API_BASE}/search/\${query}/all/en.asad\`);
+        const response = await fetch(`${API_BASE}/search/${query}/all/en.asad`);
         const data = await response.json();
         
         if (!data.data || data.data.results.length === 0) {
@@ -303,11 +303,11 @@ async function performSearch(query) {
 
         let html = '';
         data.data.results.slice(0, 20).forEach(result => {
-            html += \`
-                <div class="search-item" onclick="jumpToVerse(\${result.surah.number}, \${result.numberInSurah}); closeModal()" style="padding: 0.75rem; border-bottom: 1px solid var(--border-color); cursor: pointer;">
-                    <div style="font-size: 0.8rem; color: var(--accent-color);">\${result.surah.englishName} (\${result.surah.number}:\${result.numberInSurah})</div>
-                    <p style="font-size: 0.9rem;">\${result.text}</p>
-                </div>\`;
+            html += `
+                <div class="search-item" onclick="jumpToVerse(${result.surah.number}, ${result.numberInSurah}); closeModal()" style="padding: 0.75rem; border-bottom: 1px solid var(--border-color); cursor: pointer;">
+                    <div style="font-size: 0.8rem; color: var(--accent-color);">${result.surah.englishName} (${result.surah.number}:${result.numberInSurah})</div>
+                    <p style="font-size: 0.9rem;">${result.text}</p>
+                </div>`;
         });
         resultsArea.innerHTML = html;
     } catch (error) {
@@ -325,12 +325,12 @@ function setViewMode(mode) {
 
 // Data Helpers
 function getLinksForVerse(surah, verse) {
-    const key = \`\${surah}:\${verse}\`;
+    const key = `${surah}:${verse}`;
     return QURAN_LINKS[key] || [];
 }
 
 async function getVerseText(surah, verse) {
-    const data = await fetchQuranData(\`ayah/\${surah}:\${verse}/quran-uthmani\`);
+    const data = await fetchQuranData(`ayah/${surah}:${verse}/quran-uthmani`);
     return data ? data.text : 'Text not found';
 }
 
@@ -341,40 +341,40 @@ async function renderStudyMode() {
         return;
     }
 
-    let html = \`<div class="study-view">
-        <h2 class="surah-title" style="text-align: center; margin-bottom: 2rem;">\${state.currentSurah}. \${arabic.name} (\${arabic.englishName})</h2>\`;
+    let html = `<div class="study-view">
+        <h2 class="surah-title" style="text-align: center; margin-bottom: 2rem;">${state.currentSurah}. ${arabic.name} (${arabic.englishName})</h2>`;
 
     for (let i = 0; i < arabic.ayahs.length; i++) {
         const ayahAr = arabic.ayahs[i];
         const ayahEn = english.ayahs[i];
         const links = getLinksForVerse(state.currentSurah, ayahAr.numberInSurah);
 
-        html += \`
-            <div class="verse-card" id="verse-\${ayahAr.numberInSurah}">
+        html += `
+            <div class="verse-card" id="verse-${ayahAr.numberInSurah}">
                 <div class="verse-header">
-                    <span>\${state.currentSurah}:\${ayahAr.numberInSurah}</span>
+                    <span>${state.currentSurah}:${ayahAr.numberInSurah}</span>
                     <div class="verse-actions">
-                        <button onclick="toggleBookmark(\${state.currentSurah}, \${ayahAr.numberInSurah})">🔖</button>
+                        <button onclick="toggleBookmark(${state.currentSurah}, ${ayahAr.numberInSurah})">🔖</button>
                     </div>
                 </div>
-                <p class="arabic-text" style="font-size: 1.8rem; margin-bottom: 1rem;">\${ayahAr.text}</p>
-                <p class="english-text" style="color: var(--text-color); opacity: 0.8; margin-bottom: 1rem;">\${ayahEn.text}</p>
-                \${links.length > 0 ? \`
+                <p class="arabic-text" style="font-size: 1.8rem; margin-bottom: 1rem;">${ayahAr.text}</p>
+                <p class="english-text" style="color: var(--text-color); opacity: 0.8; margin-bottom: 1rem;">${ayahEn.text}</p>
+                ${links.length > 0 ? `
                     <div class="connections-container" style="margin-top: 1rem; border-top: 1px solid var(--border-color); padding-top: 0.5rem;">
                         <details>
-                            <summary style="cursor: pointer; color: var(--accent-color); font-weight: bold;">\${links.length} Connection\${links.length > 1 ? 's' : ''}</summary>
+                            <summary style="cursor: pointer; color: var(--accent-color); font-weight: bold;">${links.length} Connection${links.length > 1 ? 's' : ''}</summary>
                             <div class="connections-list" style="margin-top: 0.5rem;">
-                                \${links.map(link => \`
-                                    <div class="connected-verse" onclick="jumpToVerse(\${link.surah}, \${link.verse})" style="background: rgba(39, 174, 96, 0.05); padding: 0.5rem; border-radius: 4px; margin-bottom: 0.5rem; cursor: pointer;">
-                                        <div style="font-size: 0.8rem; color: var(--accent-color);">\${link.surah}:\${link.verse} (\${link.type})</div>
-                                        <p class="connected-text-placeholder" data-surah="\${link.surah}" data-verse="\${link.verse}" style="font-family: var(--font-arabic); direction: rtl; font-size: 1.2rem;"></p>
+                                ${links.map(link => `
+                                    <div class="connected-verse" onclick="jumpToVerse(${link.surah}, ${link.verse})" style="background: rgba(39, 174, 96, 0.05); padding: 0.5rem; border-radius: 4px; margin-bottom: 0.5rem; cursor: pointer;">
+                                        <div style="font-size: 0.8rem; color: var(--accent-color);">${link.surah}:${link.verse} (${link.type})</div>
+                                        <p class="connected-text-placeholder" data-surah="${link.surah}" data-verse="${link.verse}" style="font-family: var(--font-arabic); direction: rtl; font-size: 1.2rem;"></p>
                                     </div>
-                                \`).join('')}
+                                `).join('')}
                             </div>
                         </details>
                     </div>
-                \` : ''}
-            </div>\`;
+                `: ''}
+            </div>`;
     }
 
     html += '</div>';
@@ -400,33 +400,33 @@ async function renderReadingMode() {
         return;
     }
 
-    let html = \`<div class="reading-view">
+    let html = `<div class="reading-view">
         <div class="page-header" style="text-align: center; margin-bottom: 1rem; border-bottom: 1px solid var(--border-color); padding-bottom: 0.5rem;">
-            Page \${state.currentPage}
+            Page ${state.currentPage}
         </div>
-        <div class="mushaf-container" style="text-align: justify; direction: rtl; line-height: 2.5;">\`;
+        <div class="mushaf-container" style="text-align: justify; direction: rtl; line-height: 2.5;">`;
 
     const allLinksOnPage = [];
 
     arabic.ayahs.forEach((ayah, index) => {
         const links = getLinksForVerse(ayah.surah.number, ayah.numberInSurah);
         if (links.length > 0) {
-            allLinksOnPage.push({ from: \`\${ayah.surah.number}:\${ayah.numberInSurah}\`, links });
+            allLinksOnPage.push({ from: `${ayah.surah.number}:${ayah.numberInSurah}`, links });
         }
 
-        html += \`<span class="arabic-text" id="verse-\${ayah.surah.number}-\${ayah.numberInSurah}" style="font-size: 1.8rem;">
-            \${ayah.text} 
-            <span class="verse-number" style="font-size: 0.8rem; color: var(--accent-color); border: 1px solid var(--accent-color); border-radius: 50%; padding: 2px 5px; margin: 0 5px;">\${ayah.numberInSurah}</span>
-            \${links.length > 0 ? \`<sup style="color: var(--accent-color); font-size: 0.6rem; margin-left: -10px;">\${links.length}</sup>\` : ''}
-        </span> \`;
+        html += `<span class="arabic-text" id="verse-${ayah.surah.number}-${ayah.numberInSurah}" style="font-size: 1.8rem;">
+            ${ayah.text} 
+            <span class="verse-number" style="font-size: 0.8rem; color: var(--accent-color); border: 1px solid var(--accent-color); border-radius: 50%; padding: 2px 5px; margin: 0 5px;">${ayah.numberInSurah}</span>
+            ${links.length > 0 ? `<sup style="color: var(--accent-color); font-size: 0.6rem; margin-left: -10px;">${links.length}</sup>`: ''}
+        </span> `;
     });
 
-    html += \`</div>
+    html += `</div>
         <div class="pagination-controls" style="display: flex; justify-content: space-between; margin-top: 2rem;">
-            <button onclick="changePage(-1)" \${state.currentPage <= 1 ? 'disabled' : ''}>Previous Page</button>
-            <button onclick="changePage(1)" \${state.currentPage >= 604 ? 'disabled' : ''}>Next Page</button>
+            <button onclick="changePage(-1)" ${state.currentPage <= 1 ? 'disabled' : ''}>Previous Page</button>
+            <button onclick="changePage(1)" ${state.currentPage >= 604 ? 'disabled' : ''}>Next Page</button>
         </div>
-    </div>\`;
+    </div>`;
 
     contentArea.innerHTML = html;
     renderConnectionsFooter(allLinksOnPage);
@@ -439,20 +439,20 @@ async function renderConnectionsFooter(allLinks) {
     }
 
     connectionsFooter.classList.remove('hidden');
-    let footerHtml = \`<h3 style="margin-bottom: 1rem; border-bottom: 2px solid var(--accent-color);">Page Connections</h3>\`;
+    let footerHtml = `<h3 style="margin-bottom: 1rem; border-bottom: 2px solid var(--accent-color);">Page Connections</h3>`;
 
     for (const item of allLinks) {
-        footerHtml += \`<div class="footer-group" style="margin-bottom: 1.5rem;">
-            <div style="font-weight: bold; color: var(--accent-color); margin-bottom: 0.5rem;">From Verse \${item.from}</div>\`;
+        footerHtml += `<div class="footer-group" style="margin-bottom: 1.5rem;">
+            <div style="font-weight: bold; color: var(--accent-color); margin-bottom: 0.5rem;">From Verse ${item.from}</div>`;
         for (const link of item.links) {
             const connectedText = await getVerseText(link.surah, link.verse);
-            footerHtml += \`
-                <div class="connected-item" onclick="jumpToVerse(\${link.surah}, \${link.verse})" style="background: rgba(39, 174, 96, 0.05); padding: 0.8rem; border-radius: 6px; margin-bottom: 0.5rem; cursor: pointer;">
-                    <div style="font-size: 0.8rem; opacity: 0.7;">To \${link.surah}:\${link.verse} (\${link.type})</div>
-                    <p class="arabic-text" style="font-size: 1.2rem;">\${connectedText}</p>
-                </div>\`;
+            footerHtml += `
+                <div class="connected-item" onclick="jumpToVerse(${link.surah}, ${link.verse})" style="background: rgba(39, 174, 96, 0.05); padding: 0.8rem; border-radius: 6px; margin-bottom: 0.5rem; cursor: pointer;">
+                    <div style="font-size: 0.8rem; opacity: 0.7;">To ${link.surah}:${link.verse} (${link.type})</div>
+                    <p class="arabic-text" style="font-size: 1.2rem;">${connectedText}</p>
+                </div>`;
         }
-        footerHtml += \`</div>\`;
+        footerHtml += `</div>`;
     }
     footerContent.innerHTML = footerHtml;
 }
@@ -470,11 +470,11 @@ async function jumpToVerse(surah, verse) {
     state.currentVerse = verse;
 
     if (state.viewMode === 'reading') {
-        const metadata = await fetchQuranData(\`ayah/\${surah}:\${verse}\`);
+        const metadata = await fetchQuranData(`ayah/${surah}:${verse}`);
         if (metadata) state.currentPage = metadata.page;
     }
     await render();
-    const verseId = state.viewMode === 'reading' ? \`verse-\${surah}-\${verse}\` : \`verse-\${verse}\`;
+    const verseId = state.viewMode === 'reading' ? `verse-${surah}-${verse}`: `verse-${verse}`;
     const verseEl = document.getElementById(verseId);
     if (verseEl) verseEl.scrollIntoView({ behavior: 'smooth', block: 'center' });
 }
@@ -491,19 +491,19 @@ function goBack() {
 }
 
 function showQuickJump() {
-    let html = \`
+    let html = `
         <h3>Quick Jump</h3>
         <div style="margin: 1rem 0;">
             <label>Surah:</label>
             <select id="jump-surah" style="width: 100%; padding: 0.5rem; margin-bottom: 1rem;">
-                \${SURAH_NAMES.map(s => \`<option value="\${s.id}" \${s.id === state.currentSurah ? 'selected' : ''}>\${s.id}. \${s.englishName}</option>\`).join('')}
+                ${SURAH_NAMES.map(s => `<option value="${s.id}" ${s.id === state.currentSurah ? 'selected' : ''}>${s.id}. ${s.englishName}</option>`).join('')}
             </select>
             <label>Verse:</label>
-            <input type="number" id="jump-verse" value="\${state.currentVerse}" style="width: 100%; padding: 0.5rem; margin-bottom: 1rem;">
+            <input type="number" id="jump-verse" value="${state.currentVerse}" style="width: 100%; padding: 0.5rem; margin-bottom: 1rem;">
             <button onclick="performJump()" style="width: 100%; padding: 0.75rem; background: var(--accent-color); color: white; border: none; border-radius: 4px; cursor: pointer;">Jump</button>
         </div>
-        \${state.history.length > 0 ? \`<button onclick="goBack(); closeModal()" style="width: 100%; padding: 0.5rem; background: var(--card-bg); border: 1px solid var(--border-color); border-radius: 4px; margin-top: 0.5rem; cursor: pointer; width: 100%;">Go Back to Previous Location</button>\` : ''}
-    \`;
+        ${state.history.length > 0 ? `<button onclick="goBack(); closeModal()" style="width: 100%; padding: 0.5rem; background: var(--card-bg); border: 1px solid var(--border-color); border-radius: 4px; margin-top: 0.5rem; cursor: pointer; width: 100%;">Go Back to Previous Location</button>`: ''}
+    `;
     modalBody.innerHTML = html;
     modalOverlay.classList.remove('hidden');
 }
@@ -520,7 +520,7 @@ function closeModal() {
 }
 
 function toggleBookmark(surah, verse) {
-    const key = \`\${surah}:\${verse}\`;
+    const key = `${surah}:${verse}`;
     const index = state.bookmarks.indexOf(key);
     if (index === -1) state.bookmarks.push(key);
     else state.bookmarks.splice(index, 1);
@@ -528,7 +528,7 @@ function toggleBookmark(surah, verse) {
 }
 
 async function render() {
-    contentArea.innerHTML = \`<p style="text-align: center; margin-top: 2rem;">Loading...</p>\`;
+    contentArea.innerHTML = `<p style="text-align: center; margin-top: 2rem;">Loading...</p>`;
     if (state.viewMode === 'study') {
         connectionsFooter.classList.add('hidden');
         await renderStudyMode();
