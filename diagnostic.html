@@ -1,0 +1,239 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>QuranViz Pro - Diagnostic</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 50px auto;
+            padding: 20px;
+        }
+        .test-item {
+            padding: 15px;
+            margin: 10px 0;
+            border-radius: 8px;
+            border: 2px solid #ddd;
+        }
+        .success {
+            background-color: #d4edda;
+            border-color: #28a745;
+        }
+        .error {
+            background-color: #f8d7da;
+            border-color: #dc3545;
+        }
+        .warning {
+            background-color: #fff3cd;
+            border-color: #ffc107;
+        }
+        h1 {
+            color: #2c7a7b;
+        }
+        pre {
+            background: #f5f5f5;
+            padding: 10px;
+            border-radius: 4px;
+            overflow-x: auto;
+        }
+        button {
+            background: #2c7a7b;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 16px;
+            margin-top: 20px;
+        }
+        button:hover {
+            background: #234e52;
+        }
+    </style>
+</head>
+<body>
+    <h1>🔍 QuranViz Pro Diagnostic</h1>
+    <p>This page will help identify any loading issues.</p>
+
+    <div id="results"></div>
+
+    <button onclick="location.href='index.html'">Launch QuranViz Pro</button>
+
+    <script src="quran_links.js"></script>
+    <script type="module">
+        const results = document.getElementById('results');
+
+        function addTest(title, status, message) {
+            const div = document.createElement('div');
+            div.className = `test-item ${status}`;
+            div.innerHTML = `<strong>${status === 'success' ? '✅' : status === 'error' ? '❌' : '⚠️'} ${title}</strong><br>${message}`;
+            results.appendChild(div);
+        }
+
+        // Test 1: QURAN_LINKS loaded
+        if (typeof window.QURAN_LINKS !== 'undefined') {
+            const keys = Object.keys(window.QURAN_LINKS);
+            addTest(
+                'QURAN_LINKS Data',
+                'success',
+                `Loaded successfully with ${keys.length} verse keys.<br>Sample: ${keys.slice(0, 5).join(', ')}`
+            );
+        } else {
+            addTest(
+                'QURAN_LINKS Data',
+                'error',
+                'Not loaded! Check if quran_links.js exists and is properly formatted.'
+            );
+        }
+
+        // Test 2: Check if modules can be imported
+        try {
+            import('./js/data/surah-names.js').then(module => {
+                addTest(
+                    'Surah Names Module',
+                    'success',
+                    `Loaded successfully with ${module.SURAH_NAMES.length} surahs`
+                );
+            }).catch(err => {
+                addTest(
+                    'Surah Names Module',
+                    'error',
+                    `Failed to load: ${err.message}`
+                );
+            });
+        } catch (err) {
+            addTest(
+                'ES6 Modules',
+                'error',
+                `Your browser may not support ES6 modules: ${err.message}`
+            );
+        }
+
+        // Test 3: Check page-map
+        try {
+            import('./js/data/page-map.js').then(module => {
+                addTest(
+                    'Page Map Module',
+                    'success',
+                    `Loaded successfully with ${module.PAGE_MAP.length} pages`
+                );
+            }).catch(err => {
+                addTest(
+                    'Page Map Module',
+                    'error',
+                    `Failed to load: ${err.message}`
+                );
+            });
+        } catch (err) {
+            addTest(
+                'Page Map Module',
+                'error',
+                `Failed: ${err.message}`
+            );
+        }
+
+        // Test 4: Check API Service
+        try {
+            import('./js/services/api-service.js').then(module => {
+                addTest(
+                    'API Service Module',
+                    'success',
+                    'Loaded successfully'
+                );
+            }).catch(err => {
+                addTest(
+                    'API Service Module',
+                    'error',
+                    `Failed to load: ${err.message}`
+                );
+            });
+        } catch (err) {
+            addTest(
+                'API Service Module',
+                'error',
+                `Failed: ${err.message}`
+            );
+        }
+
+        // Test 5: Check App State
+        try {
+            import('./js/state/app-state.js').then(module => {
+                addTest(
+                    'App State Module',
+                    'success',
+                    'Loaded successfully'
+                );
+            }).catch(err => {
+                addTest(
+                    'App State Module',
+                    'error',
+                    `Failed to load: ${err.message}`
+                );
+            });
+        } catch (err) {
+            addTest(
+                'App State Module',
+                'error',
+                `Failed: ${err.message}`
+            );
+        }
+
+        // Test 6: Check main app
+        try {
+            import('./js/app.js').then(module => {
+                addTest(
+                    'Main App Module',
+                    'success',
+                    'Loaded successfully'
+                );
+            }).catch(err => {
+                addTest(
+                    'Main App Module',
+                    'error',
+                    `Failed to load: ${err.message}`
+                );
+            });
+        } catch (err) {
+            addTest(
+                'Main App Module',
+                'error',
+                `Failed: ${err.message}`
+            );
+        }
+
+        // Test 7: Browser compatibility
+        const browserInfo = `${navigator.userAgent}`;
+        const supportsModules = 'noModule' in document.createElement('script');
+        addTest(
+            'Browser Compatibility',
+            supportsModules ? 'success' : 'warning',
+            `Browser: ${browserInfo.substring(0, 100)}...<br>ES6 Modules: ${supportsModules ? 'Supported' : 'May not be supported'}`
+        );
+
+        // Add instructions
+        setTimeout(() => {
+            results.innerHTML += `
+                <div class="test-item" style="background: #e7f3ff; border-color: #2c7a7b;">
+                    <h3>Next Steps:</h3>
+                    <ol>
+                        <li>If all tests pass ✅, click "Launch QuranViz Pro" above</li>
+                        <li>If any tests fail ❌, check the browser console (F12) for errors</li>
+                        <li>Make sure you're opening this from a web server (not file:// protocol) if you see CORS errors</li>
+                        <li>Try a different browser if module loading fails</li>
+                    </ol>
+                    <h3>Quick Server:</h3>
+                    <p>If you need to run a local server, use one of these commands in the terminal:</p>
+                    <pre>python3 -m http.server 8000
+# or
+python -m SimpleHTTPServer 8000
+# or
+npx serve</pre>
+                    <p>Then open: <code>http://localhost:8000</code></p>
+                </div>
+            `;
+        }, 1000);
+    </script>
+</body>
+</html>

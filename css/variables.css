@@ -1,0 +1,87 @@
+/* CSS Variables for Theming */
+
+:root {
+  /* Colors - Light Theme */
+  --bg-primary: #ffffff;
+  --bg-secondary: #f5f5f5;
+  --bg-tertiary: #e8f4f8;
+  --text-primary: #1a1a1a;
+  --text-secondary: #666666;
+  --text-tertiary: #999999;
+  --accent-color: #2c7a7b;
+  --accent-hover: #234e52;
+  --border-color: #e0e0e0;
+  --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.1);
+  --shadow-md: 0 4px 6px rgba(0, 0, 0, 0.1);
+  --shadow-lg: 0 10px 20px rgba(0, 0, 0, 0.15);
+  --error-color: #e53e3e;
+  --success-color: #38a169;
+  --warning-color: #d69e2e;
+  --connection-bg: #f0f9ff;
+  --connection-border: #bae6fd;
+
+  /* Typography */
+  --font-arabic: 'Amiri Quran', 'Traditional Arabic', serif;
+  --font-arabic-regular: 'Amiri', serif;
+  --font-latin: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+  --base-font-size: 18px;
+  --font-size-sm: 0.875rem;
+  --font-size-md: 1rem;
+  --font-size-lg: 1.125rem;
+  --font-size-xl: 1.5rem;
+  --font-size-2xl: 2rem;
+
+  /* Spacing */
+  --spacing-xs: 0.25rem;
+  --spacing-sm: 0.5rem;
+  --spacing-md: 1rem;
+  --spacing-lg: 1.5rem;
+  --spacing-xl: 2rem;
+  --spacing-2xl: 3rem;
+
+  /* Layout */
+  --top-nav-height: 56px;
+  --bottom-nav-height: 64px;
+  --surah-selector-height: 48px;
+  --max-content-width: 800px;
+  --border-radius-sm: 4px;
+  --border-radius-md: 8px;
+  --border-radius-lg: 12px;
+
+  /* Transitions */
+  --transition-fast: 150ms ease;
+  --transition-normal: 250ms ease;
+  --transition-slow: 350ms ease;
+
+  /* Z-index */
+  --z-dropdown: 100;
+  --z-nav: 200;
+  --z-modal: 300;
+  --z-loading: 400;
+}
+
+[data-theme="dark"] {
+  /* Colors - Dark Theme */
+  --bg-primary: #1a1a1a;
+  --bg-secondary: #2d2d2d;
+  --bg-tertiary: #1e3a3a;
+  --text-primary: #f5f5f5;
+  --text-secondary: #b0b0b0;
+  --text-tertiary: #808080;
+  --accent-color: #4fd1c5;
+  --accent-hover: #81e6d9;
+  --border-color: #404040;
+  --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.3);
+  --shadow-md: 0 4px 6px rgba(0, 0, 0, 0.4);
+  --shadow-lg: 0 10px 20px rgba(0, 0, 0, 0.5);
+  --error-color: #fc8181;
+  --success-color: #68d391;
+  --warning-color: #f6e05e;
+  --connection-bg: #1e2936;
+  --connection-border: #2d3748;
+}
+
+/* Dynamic Font Size */
+:root {
+  font-size: var(--base-font-size);
+}

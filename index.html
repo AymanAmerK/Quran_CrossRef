@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="description" content="QuranViz Pro - Interactive Quran Study and Reading">
+    <title>QuranViz Pro</title>
+
+    <!-- CSS Files -->
+    <link rel="stylesheet" href="css/variables.css">
+    <link rel="stylesheet" href="css/base.css">
+    <link rel="stylesheet" href="css/components.css">
+    <link rel="stylesheet" href="css/study-mode.css">
+    <link rel="stylesheet" href="css/reading-mode.css">
+    <link rel="stylesheet" href="css/responsive.css">
+
+    <!-- Google Fonts for Arabic -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Amiri+Quran&family=Amiri:ital,wght@0,400;0,700;1,400;1,700&display=swap" rel="stylesheet">
+</head>
+<body>
+    <!-- Loading Overlay -->
+    <div id="loading-overlay" class="loading-overlay" style="display: none;">
+        <div class="spinner"></div>
+        <p class="loading-text">Loading...</p>
+    </div>
+
+    <!-- Top Navigation -->
+    <nav class="top-nav">
+        <button class="menu-btn" id="menu-btn" aria-label="Menu">☰</button>
+        <h1 class="app-title">QuranViz Pro</h1>
+        <button class="search-btn" id="search-btn" aria-label="Search">🔍</button>
+    </nav>
+
+    <!-- Surah Selector -->
+    <div class="surah-selector" id="surah-selector">
+        <select class="surah-select" id="surah-select" aria-label="Select Surah">
+            <option value="">Select Surah...</option>
+        </select>
+    </div>
+
+    <!-- Main Content Container -->
+    <main class="main-content" id="main-content">
+        <!-- Study Mode Container -->
+        <div class="study-mode-container" id="study-mode-container" style="display: none;">
+            <div class="verses-list" id="verses-list"></div>
+        </div>
+
+        <!-- Reading Mode Container -->
+        <div class="reading-mode-container" id="reading-mode-container" style="display: none;">
+            <div class="page-content-wrapper" id="page-content-wrapper"></div>
+        </div>
+    </main>
+
+    <!-- Bottom Navigation -->
+    <nav class="bottom-nav">
+        <button class="nav-item" id="nav-reading" data-action="reading">
+            <span class="nav-icon">📖</span>
+            <span class="nav-label">Reading</span>
+        </button>
+        <button class="nav-item active" id="nav-study" data-action="study">
+            <span class="nav-icon">📚</span>
+            <span class="nav-label">Study</span>
+        </button>
+        <button class="nav-item" id="nav-bookmarks" data-action="bookmarks">
+            <span class="nav-icon">⭐</span>
+            <span class="nav-label">Bookmarks</span>
+        </button>
+        <button class="nav-item" id="nav-settings" data-action="settings">
+            <span class="nav-icon">⚙️</span>
+            <span class="nav-label">Settings</span>
+        </button>
+    </nav>
+
+    <!-- Back Button -->
+    <button class="back-btn" id="back-btn" style="display: none;">
+        ← Back
+    </button>
+
+    <!-- Quick Jump Modal -->
+    <div class="modal" id="quick-jump-modal" style="display: none;">
+        <div class="modal-overlay"></div>
+        <div class="modal-content">
+            <h2 class="modal-title">Jump to Verse</h2>
+            <div class="form-group">
+                <label for="jump-surah-select">Surah</label>
+                <select class="surah-select" id="jump-surah-select">
+                    <option value="">Select Surah...</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label for="jump-verse-input">Verse Number</label>
+                <input type="number" class="verse-input" id="jump-verse-input" min="1" placeholder="Enter verse number">
+            </div>
+            <div class="modal-actions">
+                <button class="btn btn-primary" id="jump-btn">Jump</button>
+                <button class="btn btn-secondary" id="jump-cancel-btn">Cancel</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Search Modal -->
+    <div class="modal" id="search-modal" style="display: none;">
+        <div class="modal-overlay"></div>
+        <div class="modal-content search-modal-content">
+            <h2 class="modal-title">Search Quran</h2>
+            <div class="search-input-wrapper">
+                <input type="text" class="search-input" id="search-input" placeholder="Search for verses...">
+                <button class="btn btn-secondary" id="search-close-btn">Close</button>
+            </div>
+            <div class="search-results" id="search-results">
+                <p class="search-placeholder">Enter text to search the Quran</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Bookmarks Modal -->
+    <div class="modal" id="bookmarks-modal" style="display: none;">
+        <div class="modal-overlay"></div>
+        <div class="modal-content">
+            <h2 class="modal-title">Bookmarks</h2>
+            <div class="bookmarks-list" id="bookmarks-list">
+                <p class="empty-state">No bookmarks yet. Add bookmarks by clicking the star icon on verses.</p>
+            </div>
+            <div class="modal-actions">
+                <button class="btn btn-secondary" id="bookmarks-close-btn">Close</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Settings Modal -->
+    <div class="modal" id="settings-modal" style="display: none;">
+        <div class="modal-overlay"></div>
+        <div class="modal-content">
+            <h2 class="modal-title">Settings</h2>
+
+            <div class="setting-item">
+                <label>Language / اللغة</label>
+                <button class="btn btn-toggle" id="language-toggle">
+                    <span id="language-label">English</span>
+                </button>
+            </div>
+
+            <div class="setting-item">
+                <label>Font Size</label>
+                <div class="slider-group">
+                    <input type="range" min="14" max="28" value="18" step="1" class="font-size-slider" id="font-size-slider">
+                    <span class="font-size-value" id="font-size-value">18px</span>
+                </div>
+            </div>
+
+            <div class="setting-item">
+                <label>Theme</label>
+                <button class="btn btn-toggle" id="theme-toggle">
+                    <span id="theme-label">☀️ Light</span>
+                </button>
+            </div>
+
+            <div class="setting-item">
+                <label>Translation</label>
+                <select class="translation-select" id="translation-select">
+                    <option value="en.sahih">Sahih International</option>
+                    <option value="en.pickthall">Pickthall</option>
+                    <option value="en.yusufali">Yusuf Ali</option>
+                    <option value="en.hilali">Hilali & Khan</option>
+                </select>
+            </div>
+
+            <div class="modal-actions">
+                <button class="btn btn-secondary" id="settings-close-btn">Close</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Data File -->
+    <script src="quran_links.js"></script>
+
+    <!-- App Entry Point -->
+    <script type="module" src="js/app.js"></script>
+</body>
+</html>

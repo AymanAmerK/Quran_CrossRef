@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>QuranViz Pro - Test</title>
+    <style>
+        body { font-family: Arial, sans-serif; padding: 20px; max-width: 800px; margin: 0 auto; }
+        .success { color: green; }
+        .error { color: red; }
+        .info { color: blue; }
+        pre { background: #f5f5f5; padding: 10px; border-radius: 4px; }
+    </style>
+</head>
+<body>
+    <h1>QuranViz Pro - Installation Test</h1>
+    <div id="results"></div>
+    <script>
+        const results = document.getElementById('results');
+        
+        function log(message, type = 'info') {
+            const p = document.createElement('p');
+            p.className = type;
+            p.textContent = '✓ ' + message;
+            results.appendChild(p);
+        }
+        
+        function error(message) {
+            const p = document.createElement('p');
+            p.className = 'error';
+            p.textContent = '✗ ' + message;
+            results.appendChild(p);
+        }
+        
+        // Test file structure
+        log('Testing file structure...', 'info');
+        
+        // Check main files
+        fetch('index.html').then(r => r.ok ? log('index.html found', 'success') : error('index.html missing'));
+        fetch('quran_links.js').then(r => r.ok ? log('quran_links.js found', 'success') : error('quran_links.js missing'));
+        fetch('js/app.js').then(r => r.ok ? log('js/app.js found', 'success') : error('js/app.js missing'));
+        fetch('css/variables.css').then(r => r.ok ? log('css/variables.css found', 'success') : error('css/variables.css missing'));
+        
+        // Add more info
+        setTimeout(() => {
+            results.innerHTML += '<hr><h2>Next Steps:</h2>';
+            results.innerHTML += '<ol>';
+            results.innerHTML += '<li>Open <code>index.html</code> in your browser</li>';
+            results.innerHTML += '<li>Check that your <code>quran_links.js</code> has the correct format</li>';
+            results.innerHTML += '<li>Use browser developer tools (F12) to check for errors</li>';
+            results.innerHTML += '</ol>';
+            results.innerHTML += '<p><a href="index.html" style="background: #2c7a7b; color: white; padding: 10px 20px; text-decoration: none; border-radius: 4px; display: inline-block;">Launch QuranViz Pro</a></p>';
+        }, 1000);
+    </script>
+</body>
+</html>
